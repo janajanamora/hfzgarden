@@ -40,6 +40,24 @@
 </head>
 <body class="antialiased">
 
+  <div id="wechat-fallback" style="display:none; position:fixed; inset:0; z-index:9999; background:#FCFBF8; flex-direction:column; align-items:center; justify-content:center; padding:2rem; text-align:center; font-family:system-ui,-apple-system,sans-serif;">
+    <div style="font-size:3rem; margin-bottom:1rem;">🌷</div>
+    <h2 style="font-size:1.25rem; font-weight:bold; color:#5C4B66; margin-bottom:0.5rem;">我的花园图鉴</h2>
+    <p style="color:#8C8491; font-size:0.875rem; line-height:1.6; margin-bottom:1.5rem;">微信浏览器不支持此页面<br/>请点击右上角 <b>⋯</b> 选择<br/><b>「在 Safari 中打开」</b>或<b>「在浏览器中打开」</b></p>
+    <div style="background:#EFEBF2; border-radius:1rem; padding:1rem 1.5rem;">
+      <p style="font-size:0.75rem; color:#6A6071;">打开后可以「添加到主屏幕」<br/>这样以后直接从桌面图标打开就行啦 🌸</p>
+    </div>
+  </div>
+  <script>
+    // Show fallback if Tailwind failed to load (WeChat blocks CDN)
+    setTimeout(function() {
+      var app = document.getElementById('app');
+      if (!app || !app.innerHTML.trim()) {
+        document.getElementById('wechat-fallback').style.display = 'flex';
+      }
+    }, 2000);
+  </script>
+
   <div id="toast-root" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] transition-opacity duration-700 opacity-0 pointer-events-none w-11/12 max-w-sm"></div>
   <div id="app" class="min-h-screen pb-24 relative"></div>
   <button id="main-add-btn" onclick="openAddPlantModal()" class="fixed bottom-8 right-6 w-14 h-14 bg-[#EFEBF2]/90 backdrop-blur-xl text-[#5C4B66] rounded-full shadow-lg flex items-center justify-center text-3xl font-light z-30 transition-transform active:scale-90 border border-white/60 pb-1 select-none" style="margin-bottom: env(safe-area-inset-bottom);">+</button>
@@ -454,9 +472,9 @@
       
       const gridItems = [ [liIcon, Z_MAP[g.z]?.split(' ')[1]||'未知'], [waIcon, W_MAP[g.wa]?.split(' ')[1]||'未知'], ["📐", g.hcm+"cm"], [clIcon, clText] ];
       let gridHtml = gridItems.map(([ic, lb]) => `
-        <div class="bg-white border border-[#EFEBF2] rounded-[14px] p-2 text-center shadow-sm flex flex-col justify-center">
-          <div class="text-xl opacity-80 mb-1">${ic}</div>
-          <div class="text-[11px] font-bold text-[#8C8491]">${lb}</div>
+        <div class="bg-white border border-[#EFEBF2] rounded-[14px] p-2 text-center shadow-sm flex flex-col justify-center overflow-hidden min-w-0">
+          <div class="text-lg opacity-80 mb-1 leading-none">${ic}</div>
+          <div class="text-[10px] font-bold text-[#8C8491] truncate leading-tight">${lb}</div>
         </div>
       `).join('');
 
@@ -521,7 +539,7 @@
               </div>
           </div>
 
-          <div class="grid grid-cols-4 gap-2 h-[72px]">${gridHtml}</div>
+          <div class="grid grid-cols-4 gap-2">${gridHtml}</div>
 
           <div class="rounded-[14px] overflow-hidden border border-[#EFEBF2] bg-white shadow-sm p-1.5">
             <div class="flex justify-between px-1 mb-1 items-center"><span class="text-[11px] font-bold text-[#8C8491]">📅 大类花期设置</span> <span class="text-[10px] text-[#C4B7CB]">${g.view}</span></div>
