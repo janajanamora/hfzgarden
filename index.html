@@ -95,47 +95,47 @@
     const CL_OPTS = [{k:"easy", l:"🟢 放养型"}, {k:"mod", l:"🟡 稍留意"}, {k:"att", l:"🔴 要照顾"}];
 
     const baseP = [
-      { id:"heu", n:"矾根", e:"Heuchera", cat:"foliage", z:"part_sun", ss:["spring","summer","evergreen"], tp:"多年生·常绿·观叶", temp:"-15~30℃", wa:"mod", cl:"easy", view:"观赏期 全年（花期5-7月）", hcm:"20-30", wcm:"30-40", mo:[1,1,1,1,2,2,2,1,1,1,1,1], care:"种在排水好的腐殖土里，半阴位置叶色最漂亮。全日照也能活但深色品种会褪色。每3-4年分株一次，春天撒层堆肥护根。冬天在温哥华基本常绿。", note:"一口气种好几个颜色的矾根，深浅交错排列，效果特别棒。浅根系，秋天加层堆肥防冻拔。", vars:[
+      { id:"heu", n:"矾根", e:"Heuchera", cat:"foliage", z:"part_sun", ss:["spring","summer","evergreen"], tp:"多年生·常绿·观叶", temp:"-15~30℃", wa:"mod", cl:"easy", view:"观赏期 全年（花期5-7月）", hcm:"20-30", wcm:"30-40", mo:[1,1,1,1,2,2,2,1,1,1,1,1], care:"种在排水好的腐殖土里，半阴位置叶色最漂亮。全日照也能活但深色品种会褪色。每3-4年分株一次，春天撒层堆肥护根。冬天在温哥华基本常绿。\n\n📌 实用备忘：见干浇水，盆栽比地栽更需要注意浇水。浅根系容易冻拔，秋天堆肥覆盖很重要。花茎长出来后可以剪掉（观叶为主）。", note:"一口气种好几个颜色的矾根，深浅交错排列，效果特别棒。浅根系，秋天加层堆肥防冻拔。", vars:[
         { id:"heu_0", n:"黑曜石 Obsidian", e:"Heuchera 'Obsidian'", img:I.ho, d:"近乎黑色的叶片，需要更深的阴凉。所有矾根中最深的颜色。", ds:"purchased", star:false },
         { id:"heu_1", n:"宫殿紫 Palace Purple", e:"Heuchera micrantha 'Palace Purple'", img:I.hp, d:"1991年度最佳多年生植物。经典皮实，新手首选。", ds:"purchased", star:false },
         { id:"heu_2", n:"焦糖 Caramel", e:"Heuchera 'Caramel'", img:I.hc, d:"暖色调，杏色焦糖叶面+酒红叶背。更耐热耐旱阴。", ds:"purchased", star:false },
         { id:"heu_3", n:"果酱橘 Marmalade", e:"Heuchera 'Marmalade'", img:I.hm, d:"蜜桃金色波浪叶缘。适应性最广，半阴到日照都行。", ds:"purchased", star:false }
       ]},
-      { id:"fern", n:"日本彩叶蕨", e:"Athyrium niponicum var. pictum", cat:"foliage", z:"indirect", ss:["spring","summer"], tp:"多年生·落叶·观叶", temp:"-30~25℃", wa:"high", cl:"att", view:"观赏期 4-10月（冬季休眠）", hcm:"30-45", wcm:"45-60", mo:[0,0,0,1,1,1,1,1,1,1,0,0], care:"关键一条：土壤要一直保持湿润，干了叶边就焦。半阴位置银色最明显。冬天地上部分会完全消失，别以为死了，春天会回来。注意防蛞蝓。", note:"银灰叶片+酒红中脉，和矾根深色系放一起像天生一对。RHS获奖品种。冬天休眠是正常的，别担心。", vars:[ { id:"fern_0", n:"彩叶蕨", e:"Athyrium niponicum var. pictum", img:I.fe, d:"", ds:"purchased", star:false } ] },
-      { id:"carex", n:"金边兰草", e:"Carex oshimensis 'Evergold'", cat:"foliage", z:"part_sun", ss:["evergreen"], tp:"多年生·常绿·观赏草", temp:"-20~30℃", wa:"mod", cl:"easy", view:"观赏期 全年", hcm:"25-30", wcm:"45-50", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"四季常绿，基本不用操心。保持土壤湿润但别积水就好。早春如果叶子被冬风吹乱了，贴地剪一下，新叶很快会长出来。", note:"金色中心+深绿边缘的弧形叶，像个小喷泉。能给阴暗角落提亮。抗鹿，RHS获奖品种。", vars:[ { id:"carex_0", n:"Evergold", e:"Carex oshimensis 'Evergold'", img:I.ca, d:"", ds:"purchased", star:false } ] },
-      { id:"jenny", n:"金钱草", e:"Lysimachia nummularia", cat:"ground", z:"part_sun", ss:["summer"], tp:"多年生·地被", temp:"-30~30℃", wa:"high", cl:"mod", view:"观赏期 3-11月（花期6-8月）", hcm:"5-10", wcm:"60+蔓延", mo:[0,0,1,1,1,2,2,2,1,1,1,0], care:"喜欢湿润环境。蔓延能力很强，种下后要定期检查有没有跑到别的植物地盘上去。金叶品种需要一些光照才能保持金色。", note:"铺满地面后金灿灿的效果很漂亮。但必须控制范围，不然会「入侵」隔壁。", vars:[ { id:"jenny_0", n:"原变种", e:"Lysimachia nummularia", img:I.je, d:"", ds:"purchased", star:false } ] },
-      { id:"ajuga", n:"筋骨草", e:"Ajuga reptans", cat:"ground", z:"shade", ss:["spring","evergreen"], tp:"多年生·地被·半常绿", temp:"-30~30℃", wa:"mod", cl:"easy", view:"观赏期 全年（花期4-5月）", hcm:"10-15", wcm:"30-60蔓延", mo:[1,1,1,2,2,1,1,1,1,1,1,1], care:"湿润排水好的土就行，蔓延很快做地被。种稳之后挺耐旱的。鹿和兔子都不吃。", note:"春天蓝紫色花穗特别抢眼。紫叶品种搭配金钱草的金色，高低颜色对比超好看。", vars:[ { id:"ajuga_0", n:"紫叶", e:"Ajuga reptans", img:I.aj, d:"", ds:"purchased", star:false } ] },
-      { id:"hosta", n:"迷你玉簪", e:"Hosta (Miniature)", cat:"foliage", z:"shade", ss:["summer"], tp:"多年生·落叶·迷你型", temp:"-35~30℃", wa:"high", cl:"mod", view:"观赏期 5-10月（花期7-8月，冬季休眠）", hcm:"15-20", wcm:"20-30", mo:[0,0,0,0,1,1,2,2,1,1,0,0], care:"湿润腐殖土最好。重点防蛞蝓！不过迷你品种叶子比大型玉簪厚实，蛞蝓不太啃得动。盆栽很合适。冬天休眠是正常的。", note:"迷你型不会爆盆，小空间完全没压力。两个品种放一起种就是一组可爱的小组合。", vars:[
+      { id:"fern", n:"日本彩叶蕨", e:"Athyrium niponicum var. pictum", cat:"foliage", z:"indirect", ss:["spring","summer"], tp:"多年生·落叶·观叶", temp:"-30~25℃", wa:"high", cl:"att", view:"观赏期 4-10月（冬季休眠）", hcm:"30-45", wcm:"45-60", mo:[0,0,0,1,1,1,1,1,1,1,0,0], care:"关键一条：土壤要一直保持湿润，干了叶边就焦。半阴位置银色最明显。冬天地上部分会完全消失，别以为死了，春天会回来。\n\n📌 实用备忘：保持土面潮湿，夏天可能需要每天浇。防蛞蝓可以撒蛞蝓药（Slug Bait）。早春新叶冒出来之前，清理掉枯叶。", note:"银灰叶片+酒红中脉，和矾根深色系放一起像天生一对。RHS获奖品种。冬天休眠是正常的，别担心。", vars:[ { id:"fern_0", n:"彩叶蕨", e:"Athyrium niponicum var. pictum", img:I.fe, d:"", ds:"purchased", star:false } ] },
+      { id:"carex", n:"金边兰草", e:"Carex oshimensis 'Evergold'", cat:"foliage", z:"part_sun", ss:["evergreen"], tp:"多年生·常绿·观赏草", temp:"-20~30℃", wa:"mod", cl:"easy", view:"观赏期 全年", hcm:"25-30", wcm:"45-50", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"四季常绿，基本不用操心。保持土壤湿润但别积水就好。早春如果叶子被冬风吹乱了，贴地剪一下，新叶很快会长出来。\n\n📌 实用备忘：几乎不用施肥。注意蚜虫，发现了用肥皂水喷。不需要分株除非长得太密。", note:"金色中心+深绿边缘的弧形叶，像个小喷泉。能给阴暗角落提亮。抗鹿，RHS获奖品种。", vars:[ { id:"carex_0", n:"Evergold", e:"Carex oshimensis 'Evergold'", img:I.ca, d:"", ds:"purchased", star:false } ] },
+      { id:"jenny", n:"金钱草", e:"Lysimachia nummularia", cat:"ground", z:"part_sun", ss:["summer"], tp:"多年生·地被", temp:"-30~30℃", wa:"high", cl:"mod", view:"观赏期 3-11月（花期6-8月）", hcm:"5-10", wcm:"60+蔓延", mo:[0,0,1,1,1,2,2,2,1,1,1,0], care:"喜欢湿润环境。蔓延能力很强，种下后要定期检查有没有跑到别的植物地盘上去。金叶品种需要一些光照才能保持金色。\n\n📌 实用备忘：每月检查边界，用手拔掉越界的枝条就行。盆栽时保持盆底有水盘。如果变绿了说明光照不够。", note:"铺满地面后金灿灿的效果很漂亮。但必须控制范围，不然会「入侵」隔壁。", vars:[ { id:"jenny_0", n:"原变种", e:"Lysimachia nummularia", img:I.je, d:"", ds:"purchased", star:false } ] },
+      { id:"ajuga", n:"筋骨草", e:"Ajuga reptans", cat:"ground", z:"shade", ss:["spring","evergreen"], tp:"多年生·地被·半常绿", temp:"-30~30℃", wa:"mod", cl:"easy", view:"观赏期 全年（花期4-5月）", hcm:"10-15", wcm:"30-60蔓延", mo:[1,1,1,2,2,1,1,1,1,1,1,1], care:"湿润排水好的土就行，蔓延很快做地被。种稳之后挺耐旱的。鹿和兔子都不吃。\n\n📌 实用备忘：花谢后把花穗剪掉，保持整洁。如果长太密可以直接拔掉一部分。几乎不用施肥。", note:"春天蓝紫色花穗特别抢眼。紫叶品种搭配金钱草的金色，高低颜色对比超好看。", vars:[ { id:"ajuga_0", n:"紫叶", e:"Ajuga reptans", img:I.aj, d:"", ds:"purchased", star:false } ] },
+      { id:"hosta", n:"迷你玉簪", e:"Hosta (Miniature)", cat:"foliage", z:"shade", ss:["summer"], tp:"多年生·落叶·迷你型", temp:"-35~30℃", wa:"high", cl:"mod", view:"观赏期 5-10月（花期7-8月，冬季休眠）", hcm:"15-20", wcm:"20-30", mo:[0,0,0,0,1,1,2,2,1,1,0,0], care:"湿润腐殖土最好。重点防蛞蝓！不过迷你品种叶子比大型玉簪厚实，蛞蝓不太啃得动。盆栽很合适。冬天休眠是正常的。\n\n📌 实用备忘：盆栽每2年换一次盆。春天新叶冒出来时撒一圈蛞蝓药。秋天叶子变黄枯萎不用管，来年会重新长。", note:"迷你型不会爆盆，小空间完全没压力。两个品种放一起种就是一组可爱的小组合。", vars:[
         { id:"hosta_0", n:"蓝鼠耳 Blue Mouse Ears", e:"Hosta 'Blue Mouse Ears'", img:I.hb, d:"蓝绿色圆叶，真的像老鼠耳朵。叶片特别厚实，蛞蝓啃不太动。", ds:"purchased", star:false },
         { id:"hosta_1", n:"小彩旗 Baby Bunting", e:"Hosta 'Baby Bunting'", img:I.hbb, d:"同样迷你型，和蓝鼠耳搭配种就是一对乖巧组合。", ds:"purchased", star:false }
       ]},
-      { id:"astilbe", n:"落新妇", e:"Astilbe", cat:"flower", z:"indirect", ss:["spring","summer"], tp:"多年生·落叶", temp:"-25~25℃", wa:"high", cl:"att", view:"观赏期 4-10月（花期6-8月）", hcm:"40-60", wcm:"40-60", mo:[0,0,0,1,1,2,2,2,1,1,0,0], care:"最重要的一条：土不能干！需要一直保持湿润，和蕨类是同一个「爱喝水」阵营的。种在腐殖质丰富的土里。花谢后留着花穗做冬景也很好看。抗鹿抗兔。", note:"花穗像彩色羽毛，白色粉色紫色都有。选白色品种最配花园整体风格。", vars:[ { id:"astilbe_0", n:"混色", e:"Astilbe hybrids", img:I.as, d:"", ds:"purchased", star:false } ] },
-      { id:"sedum", n:"景天", e:"Sedum", cat:"succ", z:"full_sun", ss:["summer","evergreen"], tp:"多年生·常绿·多肉", temp:"-20~35℃", wa:"very_low", cl:"easy", view:"观赏期 全年（秋冬常变色）", hcm:"10-20", wcm:"20-90蔓延", mo:[1,1,1,1,1,1,2,2,1,1,1,1], care:"排水好的贫瘠土，越贫瘠它越开心！极度耐旱，基本不用特意浇水，千万别积水。大多数品种秋冬季节叶片变色，是超级优秀的低维护地被。", note:"将不同颜色的景天组合种在一起，或者在岩石花园的缝隙中填补，效果极其自然。", vars:[
+      { id:"astilbe", n:"落新妇", e:"Astilbe", cat:"flower", z:"indirect", ss:["spring","summer"], tp:"多年生·落叶", temp:"-25~25℃", wa:"high", cl:"att", view:"观赏期 4-10月（花期6-8月）", hcm:"40-60", wcm:"40-60", mo:[0,0,0,1,1,2,2,2,1,1,0,0], care:"最重要的一条：土不能干！需要一直保持湿润，和蕨类是同一个「爱喝水」阵营的。种在腐殖质丰富的土里。花谢后留着花穗做冬景也很好看。抗鹿抗兔。\n\n📌 实用备忘：夏天炎热时每天浇水。春天施一次缓释肥。每3年可以分株。花穗枯了留着不用剪，冬天有霜的时候很好看。", note:"花穗像彩色羽毛，白色粉色紫色都有。选白色品种最配花园整体风格。", vars:[ { id:"astilbe_0", n:"红色", e:"Astilbe hybrids", img:I.as, d:"", ds:"purchased", star:false } ] },
+      { id:"sedum", n:"景天", e:"Sedum", cat:"succ", z:"full_sun", ss:["summer","evergreen"], tp:"多年生·常绿·多肉", temp:"-20~35℃", wa:"very_low", cl:"easy", view:"观赏期 全年（秋冬常变色）", hcm:"10-20", wcm:"20-90蔓延", mo:[1,1,1,1,1,1,2,2,1,1,1,1], care:"排水好的贫瘠土，越贫瘠它越开心！极度耐旱，基本不用特意浇水，千万别积水。大多数品种秋冬季节叶片变色，是超级优秀的低维护地被。\n\n📌 实用备忘：千万不要施肥，不要多浇水。掉落的叶片和枝条插土里就能生根。冬天如果有烂叶就摘掉。", note:"将不同颜色的景天组合种在一起，或者在岩石花园的缝隙中填补，效果极其自然。", vars:[
         { id:"s-ang", n:"金叶 Angelina", e:"Sedum rupestre 'Angelina'", img:I.sa, d:"金色针叶在阳光下特别耀眼，会蔓延铺地，秋冬叶色变成美丽的橙红色。", ds:"wanted", star:false },
         { id:"s-bp", n:"蓝珍珠 Blue Pearl", e:"Sedum 'Blue Pearl'", img:I.sbp, d:"蓝绿色多肉叶片紧凑丛生，冬天也保持好看。蓝绿多肉叶+粉花，小巧精致。", ds:"wanted", star:false },
         { id:"s-db", n:"炫莓 Dazzle Berry", e:"Sedum 'Dazzle Berry'", img:I.sdb, d:"SunSparkler系列明星品种！烟蓝色叶本身就好看，覆盆子色大花簇几乎把叶子全盖住，花量惊人。", ds:"wanted", star:false },
         { id:"s-cb", n:"白岬角 Cape Blanco", e:"Sedum spathulifolium 'Cape Blanco'", img:I.scb, d:"原产地太平洋西北，种它简直天时地利！银灰色莲座叶像微缩版多肉花园，RHS获奖品种。", ds:"wanted", star:true }
       ]},
-      { id:"echi", n:"白色松果菊", e:"Echinacea purpurea", cat:"flower", z:"full_sun", ss:["summer","autumn"], tp:"多年生", temp:"-30~35℃", wa:"low", cl:"mod", view:"花期 6-9月", hcm:"45-90", wcm:"30-40", mo:[0,0,0,0,1,2,2,2,2,1,0,0], care:"排水好的普通土就行，耐旱耐热。不用施肥（肥了反而容易徒长倒伏）。蝴蝶和金翅雀都爱来。秋天留一些枯花头给鸟吃种子。", note:"白色品种整体寿命没紫色的长，这是品种特性不是养护问题。两个品种各有优势，都种也OK！", vars:[
+      { id:"echi", n:"白色松果菊", e:"Echinacea purpurea", cat:"flower", z:"full_sun", ss:["summer","autumn"], tp:"多年生", temp:"-30~35℃", wa:"low", cl:"mod", view:"花期 6-9月", hcm:"45-90", wcm:"30-40", mo:[0,0,0,0,1,2,2,2,2,1,0,0], care:"排水好的普通土就行，耐旱耐热。不用施肥（肥了反而容易徒长倒伏）。蝴蝶和金翅雀都爱来。秋天留一些枯花头给鸟吃种子。\n\n📌 实用备忘：第一年扎根期多浇点水，之后就不用管了。剪掉谢了的花能促进再开。白色品种大约能活3-4年，到时候可以重新种。", note:"白色品种整体寿命没紫色的长，这是品种特性不是养护问题。两个品种各有优势，都种也OK！", vars:[
         { id:"echi_0", n:"白天鹅 White Swan", e:"Echinacea purpurea 'White Swan'", img:I.ews, d:"经典品种，约90cm高。更高更长寿更皮实，但需要更多空间。", ds:"wanted", star:false },
         { id:"echi_1", n:"Pow Wow 白", e:"Echinacea 'PowWow White'", img:I.epw, d:"紧凑型45-60cm，花量更大，不摘残花也能复花。更适合小空间。", ds:"wanted", star:false }
       ]},
       // 这里已经去掉了名字前面的星星 ⭐
-      { id:"cosm", n:"白色波斯菊", e:"Cosmos bipinnatus", cat:"flower", z:"full_sun", ss:["summer","autumn"], tp:"一年生（可自播）", temp:"15~30℃", wa:"mod", cl:"easy", view:"花期 7-10月", hcm:"60-120", wcm:"30-40", mo:[0,0,0,0,0,0,2,2,2,2,0,0], care:"一年生，从种子种超级容易！长到20-30厘米时掐顶促进分枝。秋天结束后会自己散落种子，来年可能会自己冒出来。", note:"一年生所以不用担心越冬问题。秋天枯掉是正常的。白色波斯菊在傍晚光线下特别仙气。", seed:"强烈建议买种子！便宜太多了（一包种子够种一整排），而且从种子种非常容易。春天最后霜冻后直接撒地里就行。", vars:[
+      { id:"cosm", n:"白色波斯菊", e:"Cosmos bipinnatus", cat:"flower", z:"full_sun", ss:["summer","autumn"], tp:"一年生（可自播）", temp:"15~30℃", wa:"mod", cl:"easy", view:"花期 7-10月", hcm:"60-120", wcm:"30-40", mo:[0,0,0,0,0,0,2,2,2,2,0,0], care:"一年生，从种子种超级容易！长到20-30厘米时掐顶促进分枝。秋天结束后会自己散落种子，来年可能会自己冒出来。\n\n📌 实用备忘：5月中旬直接撒地里就行。不用施肥（肥了只长叶子不开花）。勤摘谢了的花能一直开到霜冻。高品种（Purity）可能需要支撑。", note:"一年生所以不用担心越冬问题。秋天枯掉是正常的。白色波斯菊在傍晚光线下特别仙气。", seed:"强烈建议买种子！便宜太多了（一包种子够种一整排），而且从种子种非常容易。春天最后霜冻后直接撒地里就行。", vars:[
         { id:"cosm_0", n:"纯白 Purity", e:"Cosmos bipinnatus 'Purity'", img:I.cpu, d:"经典纯白单瓣，1-1.2米高。种在后排做背景，风里轻轻摇摆特别美。", ds:"wanted", star:true },
         { id:"cosm_1", n:"白杯子蛋糕 Cupcakes", e:"Cosmos 'Cupcakes White'", img:I.ccw, d:"花瓣融合成杯形，像纸杯蛋糕包装纸！花型非常独特。", ds:"wanted", star:false },
         { id:"cosm_2", n:"奏鸣曲白 Sonata White", e:"Cosmos 'Sonata White'", img:I.csw, d:"矮型只有60cm！紧凑灌木状，风吹不倒，不用支撑。Fleuroselect金奖。", ds:"wanted", star:true }
       ]},
-      { id:"helle", n:"铁筷子", e:"Helleborus orientalis", cat:"flower", z:"shade", ss:["winter","spring","evergreen"], tp:"多年生·常绿", temp:"-15~20℃", wa:"mod", cl:"easy", view:"花期 2-4月（叶片全年常绿）", hcm:"30-45", wcm:"45-60", mo:[1,2,2,2,1,1,1,1,1,1,1,1], care:"排水好的腐殖土。最棒的是冬末就开花，别的植物还在休眠它就绽放了。超低维护，基本无病虫害。鹿不吃。", note:"花园里最早开花的植物！冬天也有常绿叶子。白色和紫色品种特别适合淡雅风格。选购时建议看着花买，因为实际花色可能有差异。", vars:[
+      { id:"helle", n:"铁筷子", e:"Helleborus orientalis", cat:"flower", z:"shade", ss:["winter","spring","evergreen"], tp:"多年生·常绿", temp:"-15~20℃", wa:"mod", cl:"easy", view:"花期 2-4月（叶片全年常绿）", hcm:"30-45", wcm:"45-60", mo:[1,2,2,2,1,1,1,1,1,1,1,1], care:"排水好的腐殖土。最棒的是冬末就开花，别的植物还在休眠它就绽放了。超低维护，基本无病虫害。鹿不吃。\n\n📌 实用备忘：早春开花前把去年的老叶剪掉，花会更显眼。不需要施肥。注意：所有部位有毒，修剪后洗手。买的时候看着花选，花色才准确。", note:"花园里最早开花的植物！冬天也有常绿叶子。白色和紫色品种特别适合淡雅风格。选购时建议看着花买，因为实际花色可能有差异。", vars:[
         { id:"helle_0", n:"白色铁筷子", e:"Helleborus orientalis (White)", img:I.hlw, d:"纯白或带绿色调的花，清雅脱俗。", ds:"recommended", star:false },
         { id:"helle_1", n:"紫色铁筷子", e:"Helleborus orientalis (Purple)", img:I.hlp, d:"深紫到玫瑰紫，花瓣常带斑点，非常有韵味。", ds:"recommended", star:false }
       ]},
-      { id:"nepeta", n:"猫薄荷", e:"Nepeta × faassenii 'Cat's Pajamas'", cat:"flower", z:"full_sun", ss:["spring","summer","autumn"], tp:"多年生", temp:"-30~35℃", wa:"low", cl:"mod", view:"花期 5-9月（剪后可复花）", hcm:"30-40", wcm:"40-50", mo:[0,0,0,1,2,2,2,2,2,1,0,0], care:"排水好的普通土就行，很耐旱。第一波花开完后剪掉三分之一，会再开一波！蜂蝶爱来，鹿兔不碰。推荐紧凑品种 Cat's Pajamas。", note:"薰衣草蓝紫色的花穗，和鼠尾草搭配层次感很好。比经典的 Walker's Low 更紧凑更适合小花园。", vars:[ { id:"nepeta_0", n:"Cat's Pajamas", e:"Nepeta faassenii", img:I.ne, d:"", ds:"wanted", star:false } ] },
-      { id:"thyme", n:"铺地百里香", e:"Thymus serpyllum", cat:"ground", z:"full_sun", ss:["summer","evergreen"], tp:"多年生·常绿·地被·香草", temp:"-25~30℃", wa:"very_low", cl:"easy", view:"观赏期 全年（花期6-8月）", hcm:"5-8", wcm:"30-50蔓延", mo:[1,1,1,1,1,2,2,2,1,1,1,1], care:"沙质或砾石土最好，极度耐旱。排水一定要好，积水会烂根。第一年长得慢，别急，第二年就会开始铺开了。", note:"铺在步石之间，夏天走过去满脚香味。花开时整片粉紫色地毯。可食用但味道不如烹饪百里香。", seed:"可以从种子开始种，但建立期比较慢（1-2年才能铺满）。买小苗更快见效。", vars:[ { id:"thyme_0", n:"粉红百里香", e:"Thymus serpyllum", img:I.th, d:"", ds:"wanted", star:false } ] },
-      { id:"brunn", n:"勿忘草·银霜", e:"Brunnera macrophylla 'Jack Frost'", cat:"foliage", z:"shade", ss:["spring"], tp:"多年生·半常绿·观叶", temp:"-30~25℃", wa:"mod", cl:"easy", view:"观赏期 3-11月（花期4-5月）", hcm:"30-40", wcm:"45-60", mo:[0,0,1,2,2,1,1,1,1,1,1,0], care:"阴凉处湿润排水好的土最合适。银色心形大叶片非常亮眼。紧凑30-40厘米高，不会乱跑乱长。", note:"银色心形叶子上有绿色脉络，像手绘的一样精致。和矾根的深色放一起，光影对比特别好看。春天还会开蓝色小花。", vars:[ { id:"brunn_0", n:"Jack Frost", e:"Brunnera macrophylla", img:I.br, d:"", ds:"recommended", star:false } ] },
-      { id:"salvia", n:"鼠尾草", e:"Salvia nemorosa 'Caradonna'", cat:"flower", z:"full_sun", ss:["spring","summer"], tp:"多年生", temp:"-25~35℃", wa:"low", cl:"mod", view:"花期 5-7月（剪后可复花）", hcm:"40-50", wcm:"30-40", mo:[0,0,0,1,2,2,2,1,1,0,0,0], care:"排水好的普通土，耐旱低维护。花谢后剪掉残花还能再开一次。紧凑直立型，不会东倒西歪。", note:"花茎是深紫色近乎黑色的，配上紫蓝花穗特别优雅。比猫薄荷更挺拔更有「建筑感」，适合花境中景。", vars:[ { id:"salvia_0", n:"Caradonna", e:"Salvia nemorosa", img:I.sv, d:"", ds:"recommended", star:false } ] },
-      { id:"stach", n:"羊耳朵", e:"Stachys byzantina 'Silver Carpet'", cat:"ground", z:"full_sun", ss:["spring","summer","evergreen"], tp:"多年生·常绿·地被·观叶", temp:"-30~35℃", wa:"very_low", cl:"easy", view:"观赏期 全年（此品种基本不开花）", hcm:"15-20", wcm:"30-60蔓延", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"极耐旱，瘦土就行。Silver Carpet品种几乎不开花，所以不会东倒西歪。排水要好，不然叶子会烂。", note:"毛绒绒的银白色叶子，手感超好，路过会忍不住摸一下。银叶衬紫花是英式花园的经典搭配。鹿兔不吃！", vars:[ { id:"stach_0", n:"Silver Carpet", e:"Stachys byzantina", img:I.st, d:"", ds:"recommended", star:false } ] },
-      { id:"phlox", n:"福禄考·白色", e:"Phlox subulata 'White Delight'", cat:"ground", z:"full_sun", ss:["spring","evergreen"], tp:"多年生·常绿·地被", temp:"-30~30℃", wa:"low", cl:"easy", view:"观赏期 全年（花期4-5月）", hcm:"5-15", wcm:"45-60蔓延", mo:[1,1,1,2,2,1,1,1,1,1,1,1], care:"常绿针叶形叶片，极耐旱。花后轻轻修剪一下保持紧凑形状就好。排水好的普通土。", note:"春天白花铺地，和铺地百里香可以做季节轮换——春天看福禄考开花，夏天看百里香开花。", seed:"可以种子种，但建立非常慢。买小苗种下去更实际。", vars:[ { id:"phlox_0", n:"White Delight", e:"Phlox subulata", img:I.ph, d:"", ds:"recommended", star:false } ] }
+      { id:"nepeta", n:"猫薄荷", e:"Nepeta × faassenii 'Cat's Pajamas'", cat:"flower", z:"full_sun", ss:["spring","summer","autumn"], tp:"多年生", temp:"-30~35℃", wa:"low", cl:"mod", view:"花期 5-9月（剪后可复花）", hcm:"30-40", wcm:"40-50", mo:[0,0,0,1,2,2,2,2,2,1,0,0], care:"排水好的普通土就行，很耐旱。第一波花开完后剪掉三分之一，会再开一波！蜂蝶爱来，鹿兔不碰。推荐紧凑品种 Cat's Pajamas。\n\n📌 实用备忘：6月花谢后大胆剪到一半高度，7-8月会再开。秋天不用剪，等早春再清理枯枝。几乎不用施肥。", note:"薰衣草蓝紫色的花穗，和鼠尾草搭配层次感很好。比经典的 Walker's Low 更紧凑更适合小花园。", vars:[ { id:"nepeta_0", n:"Cat's Pajamas", e:"Nepeta faassenii", img:I.ne, d:"", ds:"wanted", star:false } ] },
+      { id:"thyme", n:"铺地百里香", e:"Thymus serpyllum", cat:"ground", z:"full_sun", ss:["summer","evergreen"], tp:"多年生·常绿·地被·香草", temp:"-25~30℃", wa:"very_low", cl:"easy", view:"观赏期 全年（花期6-8月）", hcm:"5-8", wcm:"30-50蔓延", mo:[1,1,1,1,1,2,2,2,1,1,1,1], care:"沙质或砾石土最好，极度耐旱。排水一定要好，积水会烂根。第一年长得慢，别急，第二年就会开始铺开了。\n\n📌 实用备忘：完全不用施肥。花后可以用剪刀轻轻修一下保持平整。冬天可能看起来枯了，春天会绿回来。间距15-20厘米种，2年可铺满。", note:"铺在步石之间，夏天走过去满脚香味。花开时整片粉紫色地毯。可食用但味道不如烹饪百里香。", seed:"可以从种子开始种，但建立期比较慢（1-2年才能铺满）。买小苗更快见效。", vars:[ { id:"thyme_0", n:"粉红百里香", e:"Thymus serpyllum", img:I.th, d:"", ds:"wanted", star:false } ] },
+      { id:"brunn", n:"勿忘草·银霜", e:"Brunnera macrophylla 'Jack Frost'", cat:"foliage", z:"shade", ss:["spring"], tp:"多年生·半常绿·观叶", temp:"-30~25℃", wa:"mod", cl:"easy", view:"观赏期 3-11月（花期4-5月）", hcm:"30-40", wcm:"45-60", mo:[0,0,1,2,2,1,1,1,1,1,1,0], care:"阴凉处湿润排水好的土最合适。银色心形大叶片非常亮眼。紧凑30-40厘米高，不会乱跑乱长。\n\n📌 实用备忘：春天花谢后把花穗剪掉就行。夏天如果太干叶边会焦，浇水就好。几乎无病虫害，非常省心。", note:"银色心形叶子上有绿色脉络，像手绘的一样精致。和矾根的深色放一起，光影对比特别好看。春天还会开蓝色小花。", vars:[ { id:"brunn_0", n:"Jack Frost", e:"Brunnera macrophylla", img:I.br, d:"", ds:"recommended", star:false } ] },
+      { id:"salvia", n:"鼠尾草", e:"Salvia nemorosa 'Caradonna'", cat:"flower", z:"full_sun", ss:["spring","summer"], tp:"多年生", temp:"-25~35℃", wa:"low", cl:"mod", view:"花期 5-7月（剪后可复花）", hcm:"40-50", wcm:"30-40", mo:[0,0,0,1,2,2,2,1,1,0,0,0], care:"排水好的普通土，耐旱低维护。花谢后剪掉残花还能再开一次。紧凑直立型，不会东倒西歪。\n\n📌 实用备忘：6月第一次花后剪到叶丛顶部，7月会再开。早春把去年的枯枝剪到底部。每3年可以分株。", note:"花茎是深紫色近乎黑色的，配上紫蓝花穗特别优雅。比猫薄荷更挺拔更有「建筑感」，适合花境中景。", vars:[ { id:"salvia_0", n:"Caradonna", e:"Salvia nemorosa", img:I.sv, d:"", ds:"recommended", star:false } ] },
+      { id:"stach", n:"羊耳朵", e:"Stachys byzantina 'Silver Carpet'", cat:"ground", z:"full_sun", ss:["spring","summer","evergreen"], tp:"多年生·常绿·地被·观叶", temp:"-30~35℃", wa:"very_low", cl:"easy", view:"观赏期 全年（此品种基本不开花）", hcm:"15-20", wcm:"30-60蔓延", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"极耐旱，瘦土就行。Silver Carpet品种几乎不开花，所以不会东倒西歪。排水要好，不然叶子会烂。\n\n📌 实用备忘：冬天底部老叶可能会烂，早春清理掉就好。不用施肥。温哥华雨季注意排水，必要时加些砾石改善排水。", note:"毛绒绒的银白色叶子，手感超好，路过会忍不住摸一下。银叶衬紫花是英式花园的经典搭配。鹿兔不吃！", vars:[ { id:"stach_0", n:"Silver Carpet", e:"Stachys byzantina", img:I.st, d:"", ds:"recommended", star:false } ] },
+      { id:"phlox", n:"福禄考·白色", e:"Phlox subulata 'White Delight'", cat:"ground", z:"full_sun", ss:["spring","evergreen"], tp:"多年生·常绿·地被", temp:"-30~30℃", wa:"low", cl:"easy", view:"观赏期 全年（花期4-5月）", hcm:"5-15", wcm:"45-60蔓延", mo:[1,1,1,2,2,1,1,1,1,1,1,1], care:"常绿针叶形叶片，极耐旱。花后轻轻修剪一下保持紧凑形状就好。排水好的普通土。\n\n📌 实用备忘：5月花后修剪一次，保持密实不散开。不用施肥。老株中心如果秃了，可以分株重新种。", note:"春天白花铺地，和铺地百里香可以做季节轮换——春天看福禄考开花，夏天看百里香开花。", seed:"可以种子种，但建立非常慢。买小苗种下去更实际。", vars:[ { id:"phlox_0", n:"White Delight", e:"Phlox subulata", img:I.ph, d:"", ds:"recommended", star:false } ] }
     ];
 
     const MON = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
@@ -282,7 +282,7 @@
           const tags = Array.from(new Set(g.matchedVars.map(v => state.states[v.id] || v.ds || 'wanted'))).slice(0, 2).map(s => {
             let st = getStCfg(s);
             let timeStr = state.scheduleDates[primaryVar.id] && s === 'scheduled' ? ` (${state.scheduleDates[primaryVar.id]})` : '';
-            return `<span class="text-[11px] font-bold px-2 py-0.5 rounded-md border" style="background-color:${st.bg}60; color:${st.fg}; border-color:${st.bg}">${st.l}${timeStr}</span>`;
+            return `<span class="text-[12px] font-bold px-2 py-0.5 rounded-md border" style="background-color:${st.bg}60; color:${st.fg}; border-color:${st.bg}">${st.l}${timeStr}</span>`;
           }).join('');
 
           const ct = CAT[g.cat] || CAT.other;
@@ -301,17 +301,17 @@
                 <div class="flex-1 p-2 pl-3 min-w-0 flex flex-col justify-between">
                   <div>
                     <div class="flex items-center justify-between gap-1">
-                      <h3 class="font-bold text-base font-serif-elegant truncate" style="color:var(--text-main)">${g.n} <span class="text-[#8C8491] text-xs font-normal">(${primaryVar.n.split(' ')[0]})</span></h3>
-                      ${isStar ? '<span class="text-[11px] text-[#D4AF37] bg-[#FFF8E7] px-1.5 py-0.5 rounded flex-shrink-0 border border-[#D4AF37]/30">★</span>' : ''}
+                      <h3 class="font-bold text-[17px] font-serif-elegant truncate" style="color:var(--text-main)">${g.n} <span class="text-[#8C8491] text-[13px] font-normal">(${primaryVar.n.split(' ')[0]})</span></h3>
+                      ${isStar ? '<span class="text-[12px] text-[#D4AF37] bg-[#FFF8E7] px-1.5 py-0.5 rounded flex-shrink-0 border border-[#D4AF37]/30">★</span>' : ''}
                     </div>
-                    <p class="text-[12px] text-[#8C8491] mt-0.5 truncate italic font-serif-elegant">${g.e||'未知学名'}</p>
+                    <p class="text-[13px] text-[#8C8491] mt-0.5 truncate italic font-serif-elegant">${g.e||'未知学名'}</p>
                   </div>
                   <div class="mt-2">
                     <div class="flex gap-1.5 flex-wrap">
-                      <span class="text-[11px] font-bold px-2 py-0.5 rounded-md border" style="background-color:${ct.bg}60; color:${ct.fg}; border-color:${ct.bg}">${ct.l}</span>
+                      <span class="text-[12px] font-bold px-2 py-0.5 rounded-md border" style="background-color:${ct.bg}60; color:${ct.fg}; border-color:${ct.bg}">${ct.l}</span>
                       ${tags}
                     </div>
-                    <div class="flex gap-2.5 mt-2 text-[11px] text-[#8C8491] font-medium items-center flex-wrap">
+                    <div class="flex gap-2.5 mt-2 text-[12px] text-[#8C8491] font-medium items-center flex-wrap">
                       <span class="flex items-center gap-0.5" title="${Z_MAP[g.z]}">${zText}</span>
                       <span class="flex items-center gap-0.5" title="${W_MAP[g.wa]}">${waText}</span>
                       ${g.temp ? `<span class="flex items-center gap-0.5 bg-[#F9F7F5] px-1 rounded text-[#6A6071]">🌡️${g.temp}</span>` : ''}
@@ -423,11 +423,9 @@
             </div>
           </div>
           
-          <div class="flex justify-end mb-3">
-             <select onchange="saveState('invSort', this.value); renderApp()" class="bg-transparent text-[12px] font-bold text-[#8C8491] outline-none">
-                <option value="priority" ${state.invSort==='priority'?'selected':''}>排序：按优先级</option>
-                <option value="price" ${state.invSort==='price'?'selected':''}>排序：按价格 (高到低)</option>
-             </select>
+          <div class="flex justify-end mb-3 gap-1.5">
+             <button onclick="saveState('invSort', 'priority'); renderApp()" class="px-3 py-1.5 rounded-full text-[12px] font-bold transition-colors border ${state.invSort==='priority'?'bg-[#5C4B66] text-white border-[#5C4B66]':'bg-white text-[#8C8491] border-[#EFEBF2]'}">按优先级</button>
+             <button onclick="saveState('invSort', 'price'); renderApp()" class="px-3 py-1.5 rounded-full text-[12px] font-bold transition-colors border ${state.invSort==='price'?'bg-[#5C4B66] text-white border-[#5C4B66]':'bg-white text-[#8C8491] border-[#EFEBF2]'}">按价格</button>
           </div>
 
           <button onclick="openInvModal()" class="w-full py-3.5 mb-5 bg-[#5C4B66] text-white rounded-[16px] font-bold text-[14px] tracking-widest shadow-md flex items-center justify-center gap-2">
@@ -499,7 +497,7 @@
           <div class="w-12 h-1.5 bg-[#EFEBF2] rounded-full absolute left-1/2 -translate-x-1/2 top-2"></div>
           <span class="text-[12px] font-bold font-serif-elegant text-[#8C8491] w-10">${state.sel+1}/${filteredGroups.length}</span>
           <div class="flex-1 flex items-center justify-center gap-2 overflow-hidden">
-            <h2 class="font-bold text-[19px] text-[#2D2630] font-serif-elegant truncate">${g.n}</h2>
+            <h2 class="font-bold text-[20px] text-[#2D2630] font-serif-elegant truncate">${g.n}</h2>
             <button onclick="openEditMainModal('${g.id}')" class="text-[12px] text-[#8C8491] bg-[#F2EFF4] rounded-full px-2 py-0.5 whitespace-nowrap flex-shrink-0">✎编辑属性</button>
           </div>
           <button onclick="closeSheet()" class="w-8 h-8 rounded-full bg-[#EFEBF2] flex items-center justify-center text-[#8C8491] font-bold active:bg-[#DFD8E3]">✕</button>
@@ -517,10 +515,10 @@
           ${cv.d ? `<p class="text-[14px] text-[#2D2630] bg-white border border-[#EFEBF2] rounded-[16px] p-4 shadow-sm read-friendly animate-fadeIn">${cv.d}</p>` : ''}
 
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-[12px] font-bold px-3 py-1 rounded-md border" style="background-color:${catObj.bg}60; color:${catObj.fg}; border-color:${catObj.bg}">${catObj.l}</span>
-            <span class="text-[12px] font-bold px-3 py-1 rounded-md border" style="background-color:${stCfgData.bg}60; color:${stCfgData.fg}; border-color:${stCfgData.bg}">${stCfgData.l}</span>
-            ${g.temp ? `<span class="text-[12px] font-bold px-3 py-1 rounded-md border bg-[#F9F7F5] text-[#6A6071] border-[#EFEBF2]">🌡️ ${g.temp}</span>` : ''}
-            ${g.tp ? g.tp.split('·').map(t=>`<span class="text-[12px] font-bold px-3 py-1 rounded-md border bg-[#FCFBF8] text-[#8C8491] border-[#EFEBF2]">${t.trim()}</span>`).join('') : ''}
+            <span class="text-[13px] font-bold px-3 py-1 rounded-md border" style="background-color:${catObj.bg}60; color:${catObj.fg}; border-color:${catObj.bg}">${catObj.l}</span>
+            <span class="text-[13px] font-bold px-3 py-1 rounded-md border" style="background-color:${stCfgData.bg}60; color:${stCfgData.fg}; border-color:${stCfgData.bg}">${stCfgData.l}</span>
+            ${g.temp ? `<span class="text-[13px] font-bold px-3 py-1 rounded-md border bg-[#F9F7F5] text-[#6A6071] border-[#EFEBF2]">🌡️ ${g.temp}</span>` : ''}
+            ${state.customMainInfo[g.id]?.tp ? state.customMainInfo[g.id].tp.split('·').map(t=>t.trim()).filter(t=>t).map(t=>`<span class="text-[13px] font-bold px-3 py-1 rounded-md border bg-[#FCFBF8] text-[#8C8491] border-[#EFEBF2]">${t}</span>`).join('') : ''}
           </div>
 
           <div class="bg-[#F9F7F5] p-3 rounded-xl border border-[#EFEBF2] shadow-inner space-y-3">
@@ -552,29 +550,17 @@
             <div class="text-center text-[10px] text-[#C4B7CB] mt-1 italic w-full overflow-hidden text-ellipsis whitespace-nowrap px-1">尺幅参考：高度 ${g.hcm}cm · 宽/冠幅 ${g.wcm}cm</div>
           </div>
 
-          <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2]">
-            <p class="text-[13px] font-bold text-[#56614B] mb-3 flex items-center gap-1.5"><span class="text-base">🌱</span> 养护要点</p>
-            <p class="text-[15px] text-[#2D2630] read-friendly whitespace-pre-wrap">${g.care}</p>
-            ${g.note ? `<p class="text-[14px] text-[#4A3B52] read-friendly mt-3 pt-3 border-t border-[#EFEBF2] whitespace-pre-wrap"><span class="text-[#8C749E] mr-1">💬</span>${g.note}</p>` : ''}
-          </div>
-          
-          ${g.seed ? `
-          <div class="rounded-2xl p-5 border shadow-sm bg-[#F0F5EE] border-[#D9E6D3]">
-            <p class="text-[13px] font-bold text-[#5A7A4A] mb-2 flex items-center gap-1.5"><span class="text-base">🌰</span> 关于种子</p>
-            <p class="text-[14px] text-[#3A5A2A] read-friendly whitespace-pre-wrap">${g.seed}</p>
-          </div>
-          ` : ''}
-
           <div class="flex gap-1.5">${statusBtnHtml}${ALL_STATS.length>5 ? moreStatHtml : ''}</div>
           
           <button onclick="toggleStar('${cv.id}')" class="w-full py-3 rounded-xl border flex justify-center items-center gap-1.5 text-[14px] font-bold font-serif-elegant transition-all ${isStar ? 'bg-[#FFFDF5] border-[#D4AF37] text-[#D4AF37] shadow-sm' : 'bg-white border-[#EFEBF2] text-[#8C8491]'}">
-            <span class="text-base">${isStar ? '★' : '☆'}</span> <span>${isStar ? '此品种已置顶 (设为封面)' : '在此分类中置顶此品种'}</span>
+            <span class="text-base">${isStar ? '★' : '☆'}</span> <span>${isStar ? '此品种已置顶' : '置顶此品种'}</span>
           </button>
 
-          <div class="bg-white p-5 rounded-2xl border border-[#EFEBF2] shadow-sm">
-            <p class="text-[13px] font-bold text-[#5C4B66] mb-3 flex items-center gap-1.5"><span class="text-base">📝</span> 我的品种笔记</p>
-            <textarea oninput="updateNoteLocal('${cv.id}', this.value)" placeholder="购买日期、生长记录、特殊情况..." class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all" rows="4">${noteText}</textarea>
-            <button onclick="saveNoteUi()" class="mt-3 w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存笔记"}</button>
+          <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
+            <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记</p>
+            <textarea oninput="updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all" rows="6">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+            ${g.seed ? `<div class="rounded-xl p-3 bg-[#F0F5EE] border border-[#D9E6D3]"><p class="text-[13px] font-bold text-[#5A7A4A] mb-1">🌰 种子提示</p><p class="text-[14px] text-[#3A5A2A] read-friendly">${g.seed}</p></div>` : ''}
+            <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
         </div>
       `;
@@ -624,13 +610,37 @@
     function switchVar(idx) { sheetState.varIdx = idx; sheetState.copied = false; renderSheet(); }
 
     function addCustomVar(groupId) {
-      const name = prompt("请输入新颜色/品种名称（例如：粉色）："); if (!name || !name.trim()) return;
-      const sciName = prompt("学名或英文名（选填，用于谷歌搜索）：") || ""; const desc = prompt("一句话描述（选填）：") || "";
-      const newVar = { id: `${groupId}_cv_${Date.now()}`, n: name.trim(), e: sciName.trim(), d: desc.trim(), img: "" };
+      lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
+      document.getElementById('modal-root').innerHTML = `
+        <div class="fixed inset-0 z-[70] flex flex-col font-sans">
+          <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
+          <div class="bg-[var(--bg-cream)] rounded-t-[32px] max-h-[90vh] overflow-y-auto animate-slideUp">
+            <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
+              <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">🌱 新增品种/颜色</h2>
+              <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
+            </div>
+            <div class="p-5 space-y-4" style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));">
+              <p class="text-[13px] text-[#8C8491]">退出即放弃草稿，不会保存。</p>
+              <div><p class="text-xs font-bold text-[#8C8491] mb-1">品种名称 *</p><input id="acv_n" type="text" placeholder="如：粉色、矮生型..." class="w-full px-4 py-3.5 rounded-xl border border-[#EFEBF2] bg-white text-[15px] focus:outline-none font-bold" /></div>
+              <div><p class="text-xs font-bold text-[#8C8491] mb-1">学名/英文名（选填，方便搜索）</p><input id="acv_e" type="text" placeholder="如：Heuchera 'Lime Rickey'" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] focus:outline-none italic font-serif-elegant" /></div>
+              <div><p class="text-xs font-bold text-[#8C8491] mb-1">一句话描述（选填）</p><textarea id="acv_d" placeholder="品种特点、选购备注..." class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white h-20 resize-none focus:outline-none text-[14px]"></textarea></div>
+              <button onclick="saveCustomVar('${groupId}')" class="w-full py-4 bg-[#5C4B66] text-white rounded-xl font-bold tracking-widest shadow-md">确 认 添 加</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function saveCustomVar(groupId) {
+      const name = document.getElementById('acv_n').value.trim();
+      if (!name) return alert("请填写品种名称");
+      const sciName = document.getElementById('acv_e').value.trim();
+      const desc = document.getElementById('acv_d').value.trim();
+      const newVar = { id: `${groupId}_cv_${Date.now()}`, n: name, e: sciName, d: desc, img: "" };
       if (!state.customVars[groupId]) state.customVars[groupId] = [];
       state.customVars[groupId].push(newVar); saveState('customVars', state.customVars);
       const g = filteredGroups[state.sel]; sheetState.varIdx = g.vars.length + state.customVars[groupId].length - 1;
-      syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); renderSheet(); showToast("✨ 新品种添加成功");
+      closeModal(); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); renderSheet(); showToast("✨ 新品种添加成功");
     }
 
     function updateSciName(varId, val) { state.customNames[varId] = val.trim(); saveState('customNames', state.customNames); renderSheet(); }
@@ -699,6 +709,8 @@
     
     function toggleStar(id) { let st = { ...state.stars }; if (st[id]) delete st[id]; else st[id] = true; saveState('stars', st); state.appNeedsRender = true; renderSheet(); }
     function updateNoteLocal(id, val) { state.notes[id] = val; localStorage.setItem('mg3-n', JSON.stringify(state.notes)); }
+    function updateCare(groupId, val) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].care = val; saveState('customMainInfo', state.customMainInfo); }
+    function saveCareAndNote(groupId, varId) { saveState('customMainInfo', state.customMainInfo); sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 已保存"); }
     function saveNoteUi() { sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 笔记已保存"); }
     function toggleCalCat(cat) { if (state.calCats.includes(cat)) { if(state.calCats.length>1) state.calCats = state.calCats.filter(c=>c!==cat); } else state.calCats.push(cat); renderApp(); }
 
