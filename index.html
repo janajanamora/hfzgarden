@@ -1050,6 +1050,27 @@
       state.customImages = await loadAllImgs();
       renderApp();
 
+      // iOS keyboard compensation: shrink sheet when keyboard opens
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', function() {
+          const sheet = document.getElementById('sheet-content');
+          if (!sheet) return;
+          const vvh = window.visualViewport.height;
+          const wih = window.innerHeight;
+          if (vvh < wih * 0.85) {
+            sheet.style.maxHeight = (vvh * 0.9) + 'px';
+            setTimeout(function() {
+              var el = document.activeElement;
+              if (el && el.tagName === 'TEXTAREA') {
+                el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+              }
+            }, 150);
+          } else {
+            sheet.style.maxHeight = '';
+          }
+        });
+      }
+
       // Version announcement
       const lastVersion = localStorage.getItem('mg3-version');
       if (lastVersion !== APP_VERSION) {
