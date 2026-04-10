@@ -65,6 +65,19 @@
   <div id="modal-root"></div>
 
   <script>
+    /* ─── 版本与更新公告 ─── */
+    const APP_VERSION = "2.1";
+    const APP_CHANGELOG = [
+      "🛠️ 养护笔记保存修复 — 现在直接编辑就能正常保存了",
+      "🌰 种子提示可以编辑了 — 在养护笔记下方单独填写",
+      "📅 花历月份显示优化 — 手机上不再挤成两排",
+      "🔍 季节筛选自动联动 — 改了观赏期，筛选跟着更新",
+      "🌏 优化了谷歌搜索 — 会出现更多ai养护指南以及中文结果啦 ",
+      "📋 清单按钮更直观 — 未购/已买 一眼看出",
+      "☁️ 全阴图标换成了小云朵",
+      "📢 以后每次更新都会有这个小提示啦"
+    ];
+
     /* ─── 数据字典 ─── */
     const I = {
       ho:"https://i.imgur.com/rd0Pp42.jpg", hp:"https://i.imgur.com/J5wjIjR.jpg", hc:"https://i.imgur.com/75M947P.jpg", hm:"https://i.imgur.com/52vedG2.jpg",
@@ -87,7 +100,7 @@
       other: { l:"其他", bg:"#F0F0F0", fg:"#666666", dot:"#888888" }
     };
     
-    const ZONES = [{k:"full_sun",l:"☀️ 全日照"},{k:"part_sun",l:"⛅ 半日照"},{k:"indirect",l:"🌤️ 明亮散射"},{k:"shade",l:"🌿 全阴"}];
+    const ZONES = [{k:"full_sun",l:"☀️ 全日照"},{k:"part_sun",l:"⛅ 半日照"},{k:"indirect",l:"🌤️ 明亮散射"},{k:"shade",l:"☁️ 全阴"}];
     const Z_MAP = Object.fromEntries(ZONES.map(z => [z.k, z.l]));
     const WATER = [{k:"high",l:"💧💧💧 喜湿"},{k:"mod",l:"💧💧 中等"},{k:"low",l:"💧 耐旱"},{k:"very_low",l:"🏜️ 极耐旱"}];
     const W_MAP = Object.fromEntries(WATER.map(w => [w.k, w.l]));
@@ -188,7 +201,17 @@
           saveState('stars', state.stars);
         }
         let isStarred = allVars.some(v => state.stars[v.id]);
-        return { ...g, ...overrides, allVars, isStarred };
+        let merged = { ...g, ...overrides, allVars, isStarred };
+        // Derive seasons from mo array
+        let mo = merged.mo || [0,0,0,0,0,0,0,0,0,0,0,0];
+        let derivedSS = [];
+        if(mo[2]||mo[3]||mo[4]) derivedSS.push('spring');
+        if(mo[5]||mo[6]||mo[7]) derivedSS.push('summer');
+        if(mo[8]||mo[9]||mo[10]) derivedSS.push('autumn');
+        if(mo[11]||mo[0]||mo[1]) derivedSS.push('winter');
+        if(derivedSS.length>=4) derivedSS.push('evergreen');
+        merged.ss = derivedSS.length ? derivedSS : g.ss;
+        return merged;
       });
       ALL_STATS = [...BASE_STATS, ...state.customStats];
     }
@@ -367,7 +390,7 @@
       };
 
       let html = `<div class="px-5 pt-2 pb-10"><div class="flex items-center gap-1.5 mb-3 sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-sm py-2 z-10 border-b border-[#EFEBF2]">
-          <div class="w-24 flex-shrink-0 text-[11px] font-bold text-[#5C4B66] text-right pr-1">月份 →</div><div class="flex-1 flex">${MON.map((m,i)=>`<div class="flex-1 text-center text-[12px] font-bold text-[#5C4B66]">${i+1}月</div>`).join('')}</div>
+          <div class="w-24 flex-shrink-0 text-[11px] font-bold text-[#5C4B66] text-right pr-1">月份 →</div><div class="flex-1 flex">${MON.map((m,i)=>`<div class="flex-1 text-center text-[11px] font-bold text-[#5C4B66]" style="border-right:${i<11?'1px solid #EFEBF2':'none'}">${i+1}</div>`).join('')}</div>
         </div>
         <div class="flex gap-3 mb-4 justify-center flex-wrap items-center">
           <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background-color:#8C749E"></div><span class="text-[11px] text-[#8C8491]">观赏期</span></div>
@@ -411,7 +434,7 @@
       const renderItem = (item) => `
         <div class="flex items-start justify-between p-3 border-b border-[#EFEBF2] last:border-0 bg-white hover:bg-[#FCFBF8] transition-colors">
           <div class="flex items-start gap-3 flex-1 min-w-0">
-            <button onclick="toggleInvItem('${item.id}')" class="w-6 h-6 mt-0.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors ${item.bought ? 'bg-[#708064] border-[#708064] text-white' : 'border-[#C4B7CB] text-transparent'}">✓</button>
+            <button onclick="toggleInvItem('${item.id}')" class="mt-0.5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors text-[11px] font-bold px-2.5 py-1 gap-1 ${item.bought ? 'bg-[#708064] border-[#708064] text-white' : 'border-[#C4B7CB] text-[#8C8491] bg-white'}">${item.bought ? '✓ 已买' : '未购'}</button>
             <div class="flex-1 min-w-0 cursor-pointer" onclick="openInvModal('${item.id}')">
               <p class="text-[14px] font-bold text-[#2D2630] truncate ${item.bought ? 'line-through opacity-60' : ''}">${item.name}</p>
               <div class="flex flex-wrap gap-1.5 mt-1 items-center">
@@ -468,7 +491,7 @@
       const stCfgData = getStCfg(status);
       const noteText = state.notes[cv.id] || "";
       const curSciName = state.customNames[cv.id] || cv.e || g.e || "";
-      const searchKeyword = encodeURIComponent((curSciName || cv.n || g.n) + ' plant');
+      const searchKeyword = encodeURIComponent(g.n + ' ' + (curSciName || '') + ' 养护');
       const searchUrl = 'https://www.google.com/search?hl=zh-CN&q=' + searchKeyword;
       const displayImg = state.customImages[cv.id] || cv.img || g.img;
 
@@ -553,7 +576,6 @@
               <div class="flex items-center gap-2 border-b border-[#EFEBF2] pb-2 relative">
                   <span class="text-xl opacity-50">🔬</span>
                   <input id="edit_sci_${cv.id}" value="${curSciName}" onchange="updateSciName('${cv.id}', this.value)" class="flex-1 bg-transparent border-none outline-none font-serif-elegant italic font-bold text-[18px] text-[#5C4B66] w-full placeholder-[#C4B7CB]" placeholder="点击修改学名..." />
-                  <span class="text-[11px] text-[#8C8491] absolute right-0 pointer-events-none bg-[#F9F7F5] pl-2 font-bold">✎ 修改</span>
               </div>
               <div class="flex gap-2">
                   <button onclick="copyName('${curSciName.replace(/'/g, "\\'")}')" class="flex-1 py-3 rounded-lg border border-[#C4B7CB] bg-white text-[#5C4B66] text-[13px] font-bold flex items-center justify-center gap-1.5 active:bg-[#EFEBF2] transition-colors shadow-sm">
@@ -587,7 +609,10 @@
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
             <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记</p>
             <textarea oninput="updateCare('${g.id}', this.value); autoResize(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all overflow-hidden" rows="4" style="min-height:100px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
-            ${g.seed ? `<div class="rounded-xl p-3 bg-[#F0F5EE] border border-[#D9E6D3]"><p class="text-[13px] font-bold text-[#5A7A4A] mb-1">🌰 种子提示</p><p class="text-[14px] text-[#3A5A2A] read-friendly">${g.seed}</p></div>` : ''}
+            <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
+              <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
+              <textarea oninput="updateSeed('${g.id}', this.value); autoResize(this)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none bg-transparent read-friendly overflow-hidden" rows="2" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+            </div>
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
         </div>
@@ -603,7 +628,7 @@
 
       let existingContent = document.getElementById('sheet-content');
       if (existingContent) {
-        let st = existingContent.scrollTop; existingContent.innerHTML = contentHtml; existingContent.scrollTop = st;
+        let st = existingContent.scrollTop; existingContent.innerHTML = contentHtml; const ta = document.getElementById('care_ta_' + g.id); if(ta) autoResize(ta); const sta = document.getElementById('seed_ta_' + g.id); if(sta) autoResize(sta); existingContent.scrollTop = st;
       } else {
         root.innerHTML = `
           <div class="fixed inset-0 z-50 flex flex-col font-sans">
@@ -613,8 +638,8 @@
             </div>
           </div>
         `;
+        setTimeout(function() { const ta = document.getElementById('care_ta_' + g.id); if(ta) autoResize(ta); const sta = document.getElementById('seed_ta_' + g.id); if(sta) autoResize(sta); }, 50);
       }
-      setTimeout(function() { const ta = document.getElementById('care_ta_' + g.id); if(ta) autoResize(ta); }, 50);
     }
 
     function getImgHtml(src, cls) {
@@ -744,6 +769,7 @@
     }
     function updateNoteLocal(id, val) { state.notes[id] = val; localStorage.setItem('mg3-n', JSON.stringify(state.notes)); }
     function updateCare(groupId, val) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].care = val; saveState('customMainInfo', state.customMainInfo); }
+    function updateSeed(groupId, val) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].seed = val; saveState('customMainInfo', state.customMainInfo); }
     function cycleAttr(groupId, attr, options) { /* replaced by showAttrPicker */ }
     function showAttrPicker(groupId, attr, options, labels) {
       const existing = document.getElementById('attr-picker'); if(existing) existing.remove();
@@ -763,7 +789,7 @@
       syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr=>gr.id===groupId); state.appNeedsRender = true; renderSheet();
     }
     function editSize(groupId) { const g = ALL_GROUPS.find(gr=>gr.id===groupId); const val = prompt("输入高度范围(cm)，如 20-30", g?.hcm||""); if(val !== null) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].hcm = val.trim(); saveState('customMainInfo', state.customMainInfo); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr=>gr.id===groupId); state.appNeedsRender = true; renderSheet(); } }
-    function saveCareAndNote(groupId, varId) { saveState('customMainInfo', state.customMainInfo); sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 已保存"); }
+    function saveCareAndNote(groupId, varId) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].note = ''; saveState('customMainInfo', state.customMainInfo); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 已保存"); }
     function saveNoteUi() { sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 笔记已保存"); }
     function toggleCalCat(cat) { if (state.calCats.includes(cat)) { if(state.calCats.length>1) state.calCats = state.calCats.filter(c=>c!==cat); } else state.calCats.push(cat); renderApp(); }
     function autoViewText(mo) { const active = mo.map((v,i)=>v>0?i+1:null).filter(x=>x); if(active.length===12) return "全年观赏"; if(active.length===0) return "待设置"; const min=Math.min(...active), max=Math.max(...active); return "观赏期 "+min+"月-"+max+"月"; }
@@ -883,9 +909,6 @@
                 <p class="text-xs font-bold text-[#8C8491] mb-1 flex justify-between items-center"><span>观赏期设置</span><span class="flex gap-1"><button onclick="toggleAllMonths(true)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">全年</button><button onclick="setWinterDormant()" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">冬季休眠</button><button onclick="toggleAllMonths(false)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">清空</button></span></p>
                 <div class="grid grid-cols-6 gap-1">${monthsHtml}</div>
               </div>
-              <div><p class="text-xs font-bold text-[#8C8491] mb-1">养护说明</p><textarea id="em_care" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white h-24 resize-none focus:outline-none">${g.care}</textarea></div>
-              <div><p class="text-xs font-bold text-[#8C8491] mb-1">补充小贴士</p><textarea id="em_note" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white h-16 resize-none focus:outline-none">${g.note||''}</textarea></div>
-              <div><p class="text-xs font-bold text-[#8C8491] mb-1">关于种子 (选填)</p><textarea id="em_seed" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white h-16 resize-none focus:outline-none">${g.seed||''}</textarea></div>
               <button onclick="saveMainInfo('${g.id}')" class="w-full py-3.5 bg-[#5C4B66] text-white rounded-xl font-bold tracking-widest mt-2 shadow-md">保 存 修 改</button>
             </div>
           </div>
@@ -918,9 +941,6 @@
       info.temp = document.getElementById('em_temp').value.trim();
       info.hcm = document.getElementById('em_hcm').value.trim();
       info.wcm = document.getElementById('em_wcm').value.trim();
-      info.care = document.getElementById('em_care').value.trim();
-      info.note = document.getElementById('em_note').value.trim();
-      info.seed = document.getElementById('em_seed').value.trim();
       let moArray = [0,0,0,0,0,0,0,0,0,0,0,0]; tempBloomMonths.forEach(m => moArray[m-1] = 1);
       info.view = autoViewText(moArray);
       info.mo = moArray;
@@ -1029,6 +1049,31 @@
       await migrateImgsToIDB();
       state.customImages = await loadAllImgs();
       renderApp();
+
+      // Version announcement
+      const lastVersion = localStorage.getItem('mg3-version');
+      if (lastVersion !== APP_VERSION) {
+        setTimeout(function() {
+          const modal = document.createElement('div');
+          modal.id = 'version-modal';
+          modal.innerHTML = `
+            <div class="fixed inset-0 z-[90] flex items-center justify-center font-sans px-6">
+              <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+              <div class="bg-[var(--bg-cream)] rounded-[28px] w-full max-w-sm p-6 relative z-10 animate-slideUp shadow-2xl border border-[#EFEBF2]">
+                <div class="text-center mb-4">
+                  <div class="text-3xl mb-2">🌷</div>
+                  <h3 class="text-lg font-bold text-[#5C4B66] font-serif-elegant">图鉴更新啦 v${APP_VERSION}</h3>
+                </div>
+                <div class="space-y-2 mb-5">
+                  ${APP_CHANGELOG.map(item => `<p class="text-[13px] text-[#2D2630] leading-relaxed">${item}</p>`).join('')}
+                </div>
+                <button onclick="localStorage.setItem('mg3-version','${APP_VERSION}');document.getElementById('version-modal').remove();" class="w-full py-3.5 bg-[#5C4B66] text-white rounded-xl font-bold tracking-widest shadow-md">知道啦 ✨</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(modal);
+        }, 500);
+      }
 
       // Gentle backup reminder
       const lastBackup = localStorage.getItem('mg3-lastbackup');
