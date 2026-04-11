@@ -68,7 +68,8 @@
     /* ─── 版本与更新公告 ─── */
     const APP_VERSION = "2.3";
     const APP_CHANGELOG = [
-      "📷 植物详情大图改为方形显示 — 看得更清楚啦"
+      "📷 植物详情大图改为方形显示 — 看得更清楚啦",
+      "🐛 修复了养护笔记太长时点击输入画面乱跳的问题"
     ];
 
     /* ─── 数据字典 ─── */
@@ -1270,8 +1271,10 @@
             sheet.style.maxHeight = (vvh * 0.9) + 'px';
             setTimeout(function() {
               var el = document.activeElement;
-              if (el && el.tagName === 'TEXTAREA') {
-                el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+              if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
+                if (el.offsetHeight < vvh * 0.4) {
+                  el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
               }
             }, 150);
           } else {
