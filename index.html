@@ -70,10 +70,16 @@
 
   <script>
     /* ─── 版本与更新公告 ─── */
-    const APP_VERSION = "2.3";
+    const APP_VERSION = "2.4";
     const APP_CHANGELOG = [
-      "📷 植物详情大图改为方形显示 — 看得更清楚啦",
-      "🐛 修复了养护笔记太长时点击输入画面乱跳的问题"
+      "🌤️ 首页加了天气小字 — 出门前瞄一眼",
+      "📅 排期种植改版 — 可设提醒日期，到期自动弹窗",
+      "🌱 已种植植物可记种植日期 — 看种了多少天",
+      "📝 养护笔记默认收起 — 点标题展开/折叠",
+      "📌 置顶按钮融进品种卡 — 不再孤零零一个",
+      "🎋 每次打开都有一句小诗或彩蛋",
+      "✨ 观赏期改名「活跃期」— 果蔬花草都适用",
+      "🐛 修了几个小 bug"
     ];
 
     /* ─── 数据字典 ─── */
@@ -102,28 +108,29 @@
     
     const ZONES = [{k:"full_sun",l:"☀️ 全日照"},{k:"part_sun",l:"⛅ 半日照"},{k:"indirect",l:"🌤️ 明亮散射"},{k:"shade",l:"☁️ 全阴"}];
     const Z_MAP = Object.fromEntries(ZONES.map(z => [z.k, z.l]));
+    const FILTER_ZONES_SHORT = [{k:"all",l:"全部"},{k:"full_sun",l:"☀️ 全日"},{k:"part_sun",l:"⛅ 半日"},{k:"indirect",l:"🌤️ 散射"},{k:"shade",l:"☁️ 耐阴"}];
     const WATER = [{k:"high",l:"💧💧💧 喜湿"},{k:"mod",l:"💧💧 中等"},{k:"low",l:"💧 耐旱"},{k:"very_low",l:"🏜️ 极耐旱"}];
     const W_MAP = Object.fromEntries(WATER.map(w => [w.k, w.l]));
     const CL = { easy:"🟢 放养型", mod:"🟡 稍留意", att:"🔴 要照顾" };
     const CL_OPTS = [{k:"easy", l:"🟢 放养型"}, {k:"mod", l:"🟡 稍留意"}, {k:"att", l:"🔴 要照顾"}];
 
     const baseP = [
-      { id:"heu", n:"矾根", e:"Heuchera", cat:"foliage", z:"part_sun", ss:["spring","summer","evergreen"], tp:"", temp:"-15~30℃", wa:"mod", cl:"easy", view:"观赏期 全年（花期5-7月）", hcm:"20-30", wcm:"30-40", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"种在排水好的腐殖土里，半阴位置叶色最漂亮。全日照也能活但深色品种会褪色。每3-4年分株一次，春天撒层堆肥护根。冬天在温哥华基本常绿。\n\n📌 实用备忘：见干浇水，盆栽比地栽更需要注意浇水。浅根系容易冻拔，秋天堆肥覆盖很重要。花茎长出来后可以剪掉（观叶为主）。", note:"一口气种好几个颜色的矾根，深浅交错排列，效果特别棒。浅根系，秋天加层堆肥防冻拔。", vars:[
+      { id:"heu", n:"矾根", e:"Heuchera", cat:"foliage", z:"part_sun", ss:["spring","summer","evergreen"], tp:"", temp:"-15~30℃", wa:"mod", cl:"easy", view:"活跃期 全年（花期5-7月）", hcm:"20-30", wcm:"30-40", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"种在排水好的腐殖土里，半阴位置叶色最漂亮。全日照也能活但深色品种会褪色。每3-4年分株一次，春天撒层堆肥护根。冬天在温哥华基本常绿。\n\n📌 实用备忘：见干浇水，盆栽比地栽更需要注意浇水。浅根系容易冻拔，秋天堆肥覆盖很重要。花茎长出来后可以剪掉（观叶为主）。", note:"一口气种好几个颜色的矾根，深浅交错排列，效果特别棒。浅根系，秋天加层堆肥防冻拔。", vars:[
         { id:"heu_0", n:"黑曜石 Obsidian", e:"Heuchera 'Obsidian'", img:I.ho, d:"近乎黑色的叶片，需要更深的阴凉。所有矾根中最深的颜色。", ds:"purchased", star:false },
         { id:"heu_1", n:"宫殿紫 Palace Purple", e:"Heuchera micrantha 'Palace Purple'", img:I.hp, d:"1991年度最佳多年生植物。经典皮实，新手首选。", ds:"purchased", star:false },
         { id:"heu_2", n:"焦糖 Caramel", e:"Heuchera 'Caramel'", img:I.hc, d:"暖色调，杏色焦糖叶面+酒红叶背。更耐热耐旱阴。", ds:"purchased", star:false },
         { id:"heu_3", n:"果酱橘 Marmalade", e:"Heuchera 'Marmalade'", img:I.hm, d:"蜜桃金色波浪叶缘。适应性最广，半阴到日照都行。", ds:"purchased", star:false }
       ]},
-      { id:"fern", n:"日本彩叶蕨", e:"Athyrium niponicum var. pictum", cat:"foliage", z:"indirect", ss:["spring","summer"], tp:"", temp:"-30~25℃", wa:"high", cl:"att", view:"观赏期 4-10月（冬季休眠）", hcm:"30-45", wcm:"45-60", mo:[0,0,0,1,1,1,1,1,1,1,0,0], care:"关键一条：土壤要一直保持湿润，干了叶边就焦。半阴位置银色最明显。冬天地上部分会完全消失，别以为死了，春天会回来。\n\n📌 实用备忘：保持土面潮湿，夏天可能需要每天浇。防蛞蝓可以撒蛞蝓药（Slug Bait）。早春新叶冒出来之前，清理掉枯叶。", note:"银灰叶片+酒红中脉，和矾根深色系放一起像天生一对。RHS获奖品种。冬天休眠是正常的，别担心。", vars:[ { id:"fern_0", n:"彩叶蕨", e:"Athyrium niponicum var. pictum", img:I.fe, d:"", ds:"purchased", star:false } ] },
-      { id:"carex", n:"金边兰草", e:"Carex oshimensis 'Evergold'", cat:"foliage", z:"part_sun", ss:["evergreen"], tp:"", temp:"-20~30℃", wa:"mod", cl:"easy", view:"观赏期 全年", hcm:"25-30", wcm:"45-50", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"四季常绿，基本不用操心。保持土壤湿润但别积水就好。早春如果叶子被冬风吹乱了，贴地剪一下，新叶很快会长出来。\n\n📌 实用备忘：几乎不用施肥。注意蚜虫，发现了用肥皂水喷。不需要分株除非长得太密。", note:"金色中心+深绿边缘的弧形叶，像个小喷泉。能给阴暗角落提亮。抗鹿，RHS获奖品种。", vars:[ { id:"carex_0", n:"Evergold", e:"Carex oshimensis 'Evergold'", img:I.ca, d:"", ds:"purchased", star:false } ] },
-      { id:"jenny", n:"金钱草", e:"Lysimachia nummularia", cat:"ground", z:"part_sun", ss:["summer"], tp:"", temp:"-30~30℃", wa:"high", cl:"mod", view:"观赏期 3-11月（花期6-8月）", hcm:"5-10", wcm:"60+蔓延", mo:[0,0,1,1,1,1,1,1,1,1,1,0], care:"喜欢湿润环境。蔓延能力很强，种下后要定期检查有没有跑到别的植物地盘上去。金叶品种需要一些光照才能保持金色。\n\n📌 实用备忘：每月检查边界，用手拔掉越界的枝条就行。盆栽时保持盆底有水盘。如果变绿了说明光照不够。", note:"铺满地面后金灿灿的效果很漂亮。但必须控制范围，不然会「入侵」隔壁。", vars:[ { id:"jenny_0", n:"原变种", e:"Lysimachia nummularia", img:I.je, d:"", ds:"purchased", star:false } ] },
-      { id:"ajuga", n:"筋骨草", e:"Ajuga reptans", cat:"ground", z:"shade", ss:["spring","evergreen"], tp:"", temp:"-30~30℃", wa:"mod", cl:"easy", view:"观赏期 全年（花期4-5月）", hcm:"10-15", wcm:"30-60蔓延", mo:[0,0,1,1,1,1,1,1,1,1,0,0], care:"湿润排水好的土就行，蔓延很快做地被。种稳之后挺耐旱的。鹿和兔子都不吃。\n\n📌 实用备忘：花谢后把花穗剪掉，保持整洁。如果长太密可以直接拔掉一部分。几乎不用施肥。", note:"春天蓝紫色花穗特别抢眼。紫叶品种搭配金钱草的金色，高低颜色对比超好看。", vars:[ { id:"ajuga_0", n:"紫叶", e:"Ajuga reptans", img:I.aj, d:"", ds:"purchased", star:false } ] },
-      { id:"hosta", n:"迷你玉簪", e:"Hosta (Miniature)", cat:"foliage", z:"shade", ss:["summer"], tp:"", temp:"-35~30℃", wa:"high", cl:"mod", view:"观赏期 5-10月（花期7-8月，冬季休眠）", hcm:"15-20", wcm:"20-30", mo:[0,0,0,0,1,1,1,1,1,1,0,0], care:"湿润腐殖土最好。重点防蛞蝓！不过迷你品种叶子比大型玉簪厚实，蛞蝓不太啃得动。盆栽很合适。冬天休眠是正常的。\n\n📌 实用备忘：盆栽每2年换一次盆。春天新叶冒出来时撒一圈蛞蝓药。秋天叶子变黄枯萎不用管，来年会重新长。", note:"迷你型不会爆盆，小空间完全没压力。两个品种放一起种就是一组可爱的小组合。", vars:[
+      { id:"fern", n:"日本彩叶蕨", e:"Athyrium niponicum var. pictum", cat:"foliage", z:"indirect", ss:["spring","summer"], tp:"", temp:"-30~25℃", wa:"high", cl:"att", view:"活跃期 4-10月（冬季休眠）", hcm:"30-45", wcm:"45-60", mo:[0,0,0,1,1,1,1,1,1,1,0,0], care:"关键一条：土壤要一直保持湿润，干了叶边就焦。半阴位置银色最明显。冬天地上部分会完全消失，别以为死了，春天会回来。\n\n📌 实用备忘：保持土面潮湿，夏天可能需要每天浇。防蛞蝓可以撒蛞蝓药（Slug Bait）。早春新叶冒出来之前，清理掉枯叶。", note:"银灰叶片+酒红中脉，和矾根深色系放一起像天生一对。RHS获奖品种。冬天休眠是正常的，别担心。", vars:[ { id:"fern_0", n:"彩叶蕨", e:"Athyrium niponicum var. pictum", img:I.fe, d:"", ds:"purchased", star:false } ] },
+      { id:"carex", n:"金边兰草", e:"Carex oshimensis 'Evergold'", cat:"foliage", z:"part_sun", ss:["evergreen"], tp:"", temp:"-20~30℃", wa:"mod", cl:"easy", view:"活跃期 全年", hcm:"25-30", wcm:"45-50", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"四季常绿，基本不用操心。保持土壤湿润但别积水就好。早春如果叶子被冬风吹乱了，贴地剪一下，新叶很快会长出来。\n\n📌 实用备忘：几乎不用施肥。注意蚜虫，发现了用肥皂水喷。不需要分株除非长得太密。", note:"金色中心+深绿边缘的弧形叶，像个小喷泉。能给阴暗角落提亮。抗鹿，RHS获奖品种。", vars:[ { id:"carex_0", n:"Evergold", e:"Carex oshimensis 'Evergold'", img:I.ca, d:"", ds:"purchased", star:false } ] },
+      { id:"jenny", n:"金钱草", e:"Lysimachia nummularia", cat:"ground", z:"part_sun", ss:["summer"], tp:"", temp:"-30~30℃", wa:"high", cl:"mod", view:"活跃期 3-11月（花期6-8月）", hcm:"5-10", wcm:"60+蔓延", mo:[0,0,1,1,1,1,1,1,1,1,1,0], care:"喜欢湿润环境。蔓延能力很强，种下后要定期检查有没有跑到别的植物地盘上去。金叶品种需要一些光照才能保持金色。\n\n📌 实用备忘：每月检查边界，用手拔掉越界的枝条就行。盆栽时保持盆底有水盘。如果变绿了说明光照不够。", note:"铺满地面后金灿灿的效果很漂亮。但必须控制范围，不然会「入侵」隔壁。", vars:[ { id:"jenny_0", n:"原变种", e:"Lysimachia nummularia", img:I.je, d:"", ds:"purchased", star:false } ] },
+      { id:"ajuga", n:"筋骨草", e:"Ajuga reptans", cat:"ground", z:"shade", ss:["spring","evergreen"], tp:"", temp:"-30~30℃", wa:"mod", cl:"easy", view:"活跃期 全年（花期4-5月）", hcm:"10-15", wcm:"30-60蔓延", mo:[0,0,1,1,1,1,1,1,1,1,0,0], care:"湿润排水好的土就行，蔓延很快做地被。种稳之后挺耐旱的。鹿和兔子都不吃。\n\n📌 实用备忘：花谢后把花穗剪掉，保持整洁。如果长太密可以直接拔掉一部分。几乎不用施肥。", note:"春天蓝紫色花穗特别抢眼。紫叶品种搭配金钱草的金色，高低颜色对比超好看。", vars:[ { id:"ajuga_0", n:"紫叶", e:"Ajuga reptans", img:I.aj, d:"", ds:"purchased", star:false } ] },
+      { id:"hosta", n:"迷你玉簪", e:"Hosta (Miniature)", cat:"foliage", z:"shade", ss:["summer"], tp:"", temp:"-35~30℃", wa:"high", cl:"mod", view:"活跃期 5-10月（花期7-8月，冬季休眠）", hcm:"15-20", wcm:"20-30", mo:[0,0,0,0,1,1,1,1,1,1,0,0], care:"湿润腐殖土最好。重点防蛞蝓！不过迷你品种叶子比大型玉簪厚实，蛞蝓不太啃得动。盆栽很合适。冬天休眠是正常的。\n\n📌 实用备忘：盆栽每2年换一次盆。春天新叶冒出来时撒一圈蛞蝓药。秋天叶子变黄枯萎不用管，来年会重新长。", note:"迷你型不会爆盆，小空间完全没压力。两个品种放一起种就是一组可爱的小组合。", vars:[
         { id:"hosta_0", n:"蓝鼠耳 Blue Mouse Ears", e:"Hosta 'Blue Mouse Ears'", img:I.hb, d:"蓝绿色圆叶，真的像老鼠耳朵。叶片特别厚实，蛞蝓啃不太动。", ds:"purchased", star:false },
         { id:"hosta_1", n:"小彩旗 Baby Bunting", e:"Hosta 'Baby Bunting'", img:I.hbb, d:"同样迷你型，和蓝鼠耳搭配种就是一对乖巧组合。", ds:"purchased", star:false }
       ]},
-      { id:"astilbe", n:"落新妇", e:"Astilbe", cat:"flower", z:"indirect", ss:["spring","summer"], tp:"", temp:"-25~25℃", wa:"high", cl:"att", view:"观赏期 4-10月（花期6-8月）", hcm:"40-60", wcm:"40-60", mo:[0,0,0,1,1,1,1,1,1,1,0,0], care:"最重要的一条：土不能干！需要一直保持湿润，和蕨类是同一个「爱喝水」阵营的。种在腐殖质丰富的土里。花谢后留着花穗做冬景也很好看。抗鹿抗兔。\n\n📌 实用备忘：夏天炎热时每天浇水。春天施一次缓释肥。每3年可以分株。花穗枯了留着不用剪，冬天有霜的时候很好看。", note:"花穗像彩色羽毛，白色粉色紫色都有。选白色品种最配花园整体风格。", vars:[ { id:"astilbe_0", n:"混色", e:"Astilbe hybrids", img:I.as, d:"", ds:"purchased", star:false } ] },
-      { id:"sedum", n:"景天", e:"Sedum", cat:"succ", z:"full_sun", ss:["summer","evergreen"], tp:"", temp:"-20~35℃", wa:"very_low", cl:"easy", view:"观赏期 全年（秋冬常变色）", hcm:"10-20", wcm:"20-90蔓延", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"排水好的贫瘠土，越贫瘠它越开心！极度耐旱，基本不用特意浇水，千万别积水。大多数品种秋冬季节叶片变色，是超级优秀的低维护地被。\n\n📌 实用备忘：千万不要施肥，不要多浇水。掉落的叶片和枝条插土里就能生根。冬天如果有烂叶就摘掉。", note:"将不同颜色的景天组合种在一起，或者在岩石花园的缝隙中填补，效果极其自然。", vars:[
+      { id:"astilbe", n:"落新妇", e:"Astilbe", cat:"flower", z:"indirect", ss:["spring","summer"], tp:"", temp:"-25~25℃", wa:"high", cl:"att", view:"活跃期 4-10月（花期6-8月）", hcm:"40-60", wcm:"40-60", mo:[0,0,0,1,1,1,1,1,1,1,0,0], care:"最重要的一条：土不能干！需要一直保持湿润，和蕨类是同一个「爱喝水」阵营的。种在腐殖质丰富的土里。花谢后留着花穗做冬景也很好看。抗鹿抗兔。\n\n📌 实用备忘：夏天炎热时每天浇水。春天施一次缓释肥。每3年可以分株。花穗枯了留着不用剪，冬天有霜的时候很好看。", note:"花穗像彩色羽毛，白色粉色紫色都有。选白色品种最配花园整体风格。", vars:[ { id:"astilbe_0", n:"混色", e:"Astilbe hybrids", img:I.as, d:"", ds:"purchased", star:false } ] },
+      { id:"sedum", n:"景天", e:"Sedum", cat:"succ", z:"full_sun", ss:["summer","evergreen"], tp:"", temp:"-20~35℃", wa:"very_low", cl:"easy", view:"活跃期 全年（秋冬常变色）", hcm:"10-20", wcm:"20-90蔓延", mo:[1,1,1,1,1,1,1,1,1,1,1,1], care:"排水好的贫瘠土，越贫瘠它越开心！极度耐旱，基本不用特意浇水，千万别积水。大多数品种秋冬季节叶片变色，是超级优秀的低维护地被。\n\n📌 实用备忘：千万不要施肥，不要多浇水。掉落的叶片和枝条插土里就能生根。冬天如果有烂叶就摘掉。", note:"将不同颜色的景天组合种在一起，或者在岩石花园的缝隙中填补，效果极其自然。", vars:[
         { id:"s-ang", n:"金叶 Angelina", e:"Sedum rupestre 'Angelina'", img:I.sa, d:"金色针叶在阳光下特别耀眼，会蔓延铺地，秋冬叶色变成美丽的橙红色。", ds:"wanted", star:false },
         { id:"s-bp", n:"蓝珍珠 Blue Pearl", e:"Sedum 'Blue Pearl'", img:I.sbp, d:"蓝绿色多肉叶片紧凑丛生，冬天也保持好看。蓝绿多肉叶+粉花，小巧精致。", ds:"wanted", star:false },
         { id:"s-db", n:"炫莓 Dazzle Berry", e:"Sedum 'Dazzle Berry'", img:I.sdb, d:"SunSparkler系列明星品种！烟蓝色叶本身就好看，覆盆子色大花簇几乎把叶子全盖住，花量惊人。", ds:"wanted", star:false },
@@ -144,11 +151,11 @@
         { id:"helle_1", n:"紫色铁筷子", e:"Helleborus orientalis (Purple)", img:I.hlp, d:"深紫到玫瑰紫，花瓣常带斑点，非常有韵味。", ds:"recommended", star:false }
       ]},
       { id:"nepeta", n:"猫薄荷", e:"Nepeta × faassenii 'Cat's Pajamas'", cat:"flower", z:"full_sun", ss:["spring","summer","autumn"], tp:"", temp:"-30~35℃", wa:"low", cl:"mod", view:"花期 5-9月（剪后可复花）", hcm:"30-40", wcm:"40-50", mo:[0,0,0,1,1,1,1,1,1,1,0,0], care:"排水好的普通土就行，很耐旱。第一波花开完后剪掉三分之一，会再开一波！蜂蝶爱来，鹿兔不碰。推荐紧凑品种 Cat's Pajamas。\n\n📌 实用备忘：6月花谢后大胆剪到一半高度，7-8月会再开。秋天不用剪，等早春再清理枯枝。几乎不用施肥。", note:"薰衣草蓝紫色的花穗，和鼠尾草搭配层次感很好。比经典的 Walker's Low 更紧凑更适合小花园。", vars:[ { id:"nepeta_0", n:"Cat's Pajamas", e:"Nepeta faassenii", img:I.ne, d:"", ds:"wanted", star:false } ] },
-      { id:"thyme", n:"铺地百里香", e:"Thymus serpyllum", cat:"ground", z:"full_sun", ss:["summer","evergreen"], tp:"", temp:"-25~30℃", wa:"very_low", cl:"easy", view:"观赏期 全年（花期6-8月）", hcm:"5-8", wcm:"30-50蔓延", mo:[0,0,1,1,1,1,1,1,1,0,0,0], care:"沙质或砾石土最好，极度耐旱。排水一定要好，积水会烂根。第一年长得慢，别急，第二年就会开始铺开了。\n\n📌 实用备忘：完全不用施肥。花后可以用剪刀轻轻修一下保持平整。冬天可能看起来枯了，春天会绿回来。间距15-20厘米种，2年可铺满。", note:"铺在步石之间，夏天走过去满脚香味。花开时整片粉紫色地毯。可食用但味道不如烹饪百里香。", seed:"可以从种子开始种，但建立期比较慢（1-2年才能铺满）。买小苗更快见效。", vars:[ { id:"thyme_0", n:"粉红百里香", e:"Thymus serpyllum", img:I.th, d:"", ds:"wanted", star:false } ] },
-      { id:"brunn", n:"勿忘草·银霜", e:"Brunnera macrophylla 'Jack Frost'", cat:"foliage", z:"shade", ss:["spring"], tp:"", temp:"-30~25℃", wa:"mod", cl:"easy", view:"观赏期 3-11月（花期4-5月）", hcm:"30-40", wcm:"45-60", mo:[0,0,1,1,1,1,1,1,1,1,1,0], care:"阴凉处湿润排水好的土最合适。银色心形大叶片非常亮眼。紧凑30-40厘米高，不会乱跑乱长。\n\n📌 实用备忘：春天花谢后把花穗剪掉就行。夏天如果太干叶边会焦，浇水就好。几乎无病虫害，非常省心。", note:"银色心形叶子上有绿色脉络，像手绘的一样精致。和矾根的深色放一起，光影对比特别好看。春天还会开蓝色小花。", vars:[ { id:"brunn_0", n:"Jack Frost", e:"Brunnera macrophylla", img:I.br, d:"", ds:"recommended", star:false } ] },
+      { id:"thyme", n:"铺地百里香", e:"Thymus serpyllum", cat:"ground", z:"full_sun", ss:["summer","evergreen"], tp:"", temp:"-25~30℃", wa:"very_low", cl:"easy", view:"活跃期 全年（花期6-8月）", hcm:"5-8", wcm:"30-50蔓延", mo:[0,0,1,1,1,1,1,1,1,0,0,0], care:"沙质或砾石土最好，极度耐旱。排水一定要好，积水会烂根。第一年长得慢，别急，第二年就会开始铺开了。\n\n📌 实用备忘：完全不用施肥。花后可以用剪刀轻轻修一下保持平整。冬天可能看起来枯了，春天会绿回来。间距15-20厘米种，2年可铺满。", note:"铺在步石之间，夏天走过去满脚香味。花开时整片粉紫色地毯。可食用但味道不如烹饪百里香。", seed:"可以从种子开始种，但建立期比较慢（1-2年才能铺满）。买小苗更快见效。", vars:[ { id:"thyme_0", n:"粉红百里香", e:"Thymus serpyllum", img:I.th, d:"", ds:"wanted", star:false } ] },
+      { id:"brunn", n:"勿忘草·银霜", e:"Brunnera macrophylla 'Jack Frost'", cat:"foliage", z:"shade", ss:["spring"], tp:"", temp:"-30~25℃", wa:"mod", cl:"easy", view:"活跃期 3-11月（花期4-5月）", hcm:"30-40", wcm:"45-60", mo:[0,0,1,1,1,1,1,1,1,1,1,0], care:"阴凉处湿润排水好的土最合适。银色心形大叶片非常亮眼。紧凑30-40厘米高，不会乱跑乱长。\n\n📌 实用备忘：春天花谢后把花穗剪掉就行。夏天如果太干叶边会焦，浇水就好。几乎无病虫害，非常省心。", note:"银色心形叶子上有绿色脉络，像手绘的一样精致。和矾根的深色放一起，光影对比特别好看。春天还会开蓝色小花。", vars:[ { id:"brunn_0", n:"Jack Frost", e:"Brunnera macrophylla", img:I.br, d:"", ds:"recommended", star:false } ] },
       { id:"salvia", n:"鼠尾草", e:"Salvia nemorosa 'Caradonna'", cat:"flower", z:"full_sun", ss:["spring","summer"], tp:"", temp:"-25~35℃", wa:"low", cl:"mod", view:"花期 5-7月（剪后可复花）", hcm:"40-50", wcm:"30-40", mo:[0,0,0,1,1,1,1,1,0,0,0,0], care:"排水好的普通土，耐旱低维护。花谢后剪掉残花还能再开一次。紧凑直立型，不会东倒西歪。\n\n📌 实用备忘：6月第一次花后剪到叶丛顶部，7月会再开。早春把去年的枯枝剪到底部。每3年可以分株。", note:"花茎是深紫色近乎黑色的，配上紫蓝花穗特别优雅。比猫薄荷更挺拔更有「建筑感」，适合花境中景。", vars:[ { id:"salvia_0", n:"Caradonna", e:"Salvia nemorosa", img:I.sv, d:"", ds:"recommended", star:false } ] },
-      { id:"stach", n:"羊耳朵", e:"Stachys byzantina 'Silver Carpet'", cat:"ground", z:"full_sun", ss:["spring","summer","evergreen"], tp:"", temp:"-30~35℃", wa:"very_low", cl:"easy", view:"观赏期 全年（此品种基本不开花）", hcm:"15-20", wcm:"30-60蔓延", mo:[0,0,1,1,1,1,1,1,1,1,0,0], care:"极耐旱，瘦土就行。Silver Carpet品种几乎不开花，所以不会东倒西歪。排水要好，不然叶子会烂。\n\n📌 实用备忘：冬天底部老叶可能会烂，早春清理掉就好。不用施肥。温哥华雨季注意排水，必要时加些砾石改善排水。", note:"毛绒绒的银白色叶子，手感超好，路过会忍不住摸一下。银叶衬紫花是英式花园的经典搭配。鹿兔不吃！", vars:[ { id:"stach_0", n:"Silver Carpet", e:"Stachys byzantina", img:I.st, d:"", ds:"recommended", star:false } ] },
-      { id:"phlox", n:"福禄考·白色", e:"Phlox subulata 'White Delight'", cat:"ground", z:"full_sun", ss:["spring","evergreen"], tp:"", temp:"-30~30℃", wa:"low", cl:"easy", view:"观赏期 全年（花期4-5月）", hcm:"5-15", wcm:"45-60蔓延", mo:[0,0,1,1,1,1,1,1,1,1,0,0], care:"常绿针叶形叶片，极耐旱。花后轻轻修剪一下保持紧凑形状就好。排水好的普通土。\n\n📌 实用备忘：5月花后修剪一次，保持密实不散开。不用施肥。老株中心如果秃了，可以分株重新种。", note:"春天白花铺地，和铺地百里香可以做季节轮换——春天看福禄考开花，夏天看百里香开花。", seed:"可以种子种，但建立非常慢。买小苗种下去更实际。", vars:[ { id:"phlox_0", n:"White Delight", e:"Phlox subulata", img:I.ph, d:"", ds:"recommended", star:false } ] }
+      { id:"stach", n:"羊耳朵", e:"Stachys byzantina 'Silver Carpet'", cat:"ground", z:"full_sun", ss:["spring","summer","evergreen"], tp:"", temp:"-30~35℃", wa:"very_low", cl:"easy", view:"活跃期 全年（此品种基本不开花）", hcm:"15-20", wcm:"30-60蔓延", mo:[0,0,1,1,1,1,1,1,1,1,0,0], care:"极耐旱，瘦土就行。Silver Carpet品种几乎不开花，所以不会东倒西歪。排水要好，不然叶子会烂。\n\n📌 实用备忘：冬天底部老叶可能会烂，早春清理掉就好。不用施肥。温哥华雨季注意排水，必要时加些砾石改善排水。", note:"毛绒绒的银白色叶子，手感超好，路过会忍不住摸一下。银叶衬紫花是英式花园的经典搭配。鹿兔不吃！", vars:[ { id:"stach_0", n:"Silver Carpet", e:"Stachys byzantina", img:I.st, d:"", ds:"recommended", star:false } ] },
+      { id:"phlox", n:"福禄考·白色", e:"Phlox subulata 'White Delight'", cat:"ground", z:"full_sun", ss:["spring","evergreen"], tp:"", temp:"-30~30℃", wa:"low", cl:"easy", view:"活跃期 全年（花期4-5月）", hcm:"5-15", wcm:"45-60蔓延", mo:[0,0,1,1,1,1,1,1,1,1,0,0], care:"常绿针叶形叶片，极耐旱。花后轻轻修剪一下保持紧凑形状就好。排水好的普通土。\n\n📌 实用备忘：5月花后修剪一次，保持密实不散开。不用施肥。老株中心如果秃了，可以分株重新种。", note:"春天白花铺地，和铺地百里香可以做季节轮换——春天看福禄考开花，夏天看百里香开花。", seed:"可以种子种，但建立非常慢。买小苗种下去更实际。", vars:[ { id:"phlox_0", n:"White Delight", e:"Phlox subulata", img:I.ph, d:"", ds:"recommended", star:false } ] }
     ];
 
     /* ─── 植物匹配数据库 (Zone 8a 温哥华常见 81种) ─── */
@@ -243,7 +250,6 @@
     ];
 
     const MON = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
-    const FILTER_ZONES = [{k:"all",l:"全部"}, ...ZONES];
     const SEASONS = [{k:"all",l:"全部"},{k:"spring",l:"🌸 春"},{k:"summer",l:"☀️ 夏"},{k:"autumn",l:"🍂 秋"},{k:"winter",l:"❄️ 冬"},{k:"evergreen",l:"🌲 四季"}];
     const BASE_STATS = [
       {k:"all",l:"全部"},
@@ -267,6 +273,8 @@
       customNames:  JSON.parse(localStorage.getItem('mg3-cname') || '{}'), 
       customMainInfo: JSON.parse(localStorage.getItem('mg3-cmain') || '{}'), 
       scheduleDates: JSON.parse(localStorage.getItem('mg3-dates') || '{}'), 
+      scheduleRealDates: JSON.parse(localStorage.getItem('mg3-srd') || '{}'),
+      plantDates: JSON.parse(localStorage.getItem('mg3-pd') || '{}'),
       inventory:    JSON.parse(localStorage.getItem('mg3-inv') || '[]'),
       invSort:      localStorage.getItem('mg3-inv-sort') || 'priority',
       customStats:  JSON.parse(localStorage.getItem('mg3-cs') || '[]'),
@@ -333,8 +341,10 @@
 
     function autoResizeTextarea(el) {
       if (!el) return;
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
+      requestAnimationFrame(function() {
+        el.style.height = 'auto';
+        el.style.height = (el.scrollHeight + 2) + 'px';
+      });
     }
 
     function autoResizeSheetTextareas() {
@@ -386,7 +396,8 @@
         'states':'mg3-s', 'notes':'mg3-n', 'stars':'mg3-stars', 'customPlants':'mg3-cp', 
         'customVars':'mg3-cv', 'customVarsInfo':'mg3-cvi', 'deletedVars':'mg3-delv',
         'customNames':'mg3-cname', 'customStats':'mg3-cs', 'customMainInfo':'mg3-cmain', 
-        'scheduleDates':'mg3-dates', 'inventory':'mg3-inv', 'invSort':'mg3-inv-sort',
+        'scheduleDates':'mg3-dates', 'scheduleRealDates':'mg3-srd', 'plantDates':'mg3-pd',
+        'inventory':'mg3-inv', 'invSort':'mg3-inv-sort',
         'varLinks':'mg3-vl'
       }[key];
       if(lsKey) localStorage.setItem(lsKey, typeof val === 'string' ? val : JSON.stringify(val));
@@ -427,6 +438,7 @@
           <p class="text-[11px] tracking-[0.3em] mb-2 uppercase font-bold" style="color:var(--text-muted)">North Vancouver · Zone 8a</p>
           <h1 class="text-3xl font-bold font-serif-elegant mb-2" style="color:var(--text-main); letter-spacing: 0.05em;">我的花园图鉴</h1>
           <p class="text-[13px] italic font-serif-elegant opacity-80" style="color:var(--text-muted)">A Personal Garden Collection</p>
+          <div id="weather-card" class="mt-3 px-4 hidden"></div>
         </div>
 
         <div class="flex mx-5 my-4 bg-[#F2EFF4] rounded-xl p-1 shadow-inner border border-white/50">
@@ -441,6 +453,7 @@
       else { html += renderInventory(); }
       
       document.getElementById('app').innerHTML = html;
+      renderWeatherCard();
     }
 
     function renderGuide() {
@@ -450,7 +463,7 @@
         <div class="sticky top-0 z-20 pb-3 pt-2 backdrop-blur-xl" style="background-color: rgba(252,251,248,0.85); border-bottom: 1px solid #F2EFF4;">
           <div class="px-4 space-y-1.5">
             <div class="flex gap-1.5 flex-wrap">
-              ${FILTER_ZONES.map(f => `<button onclick="setFilter('zf', '${f.k}')" class="px-3 py-1.5 rounded-full text-[12px] font-bold text-center transition-colors border ${state.zf===f.k?'bg-[#5C4B66] text-white border-[#5C4B66]':'bg-white text-[#8C8491] border-[#EFEBF2]'}">${f.l}</button>`).join('')}
+              ${FILTER_ZONES_SHORT.map(f => `<button onclick="setFilter('zf', '${f.k}')" class="px-3 py-1.5 rounded-full text-[12px] font-bold text-center transition-colors border ${state.zf===f.k?'bg-[#5C4B66] text-white border-[#5C4B66]':'bg-white text-[#8C8491] border-[#EFEBF2]'}">${f.l}</button>`).join('')}
             </div>
             <div class="flex gap-1.5 flex-wrap">
               ${SEASONS.map(f => `<button onclick="setFilter('sf', '${f.k}')" class="px-2.5 py-1.5 whitespace-nowrap rounded-full text-[12px] font-bold transition-colors border ${state.sf===f.k?'bg-[#708064] text-white border-[#708064]':'bg-white text-[#8C8491] border-[#EFEBF2]'}">${f.l}</button>`).join('')}
@@ -558,8 +571,7 @@
           <div class="w-24 flex-shrink-0 text-[11px] font-bold text-[#5C4B66] text-right pr-1">月份 →</div><div class="flex-1 flex">${MON.map((m,i)=>`<div class="flex-1 text-center text-[11px] font-bold text-[#5C4B66]" style="border-right:${i<11?'1px solid #EFEBF2':'none'}">${i+1}</div>`).join('')}</div>
         </div>
         <div class="flex gap-3 mb-4 justify-center flex-wrap items-center">
-          <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background-color:#8C749E"></div><span class="text-[11px] text-[#8C8491]">观赏期</span></div>
-          <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm bg-[#F4F2F0]"></div><span class="text-[11px] text-[#8C8491]">休眠/不活跃</span></div>
+          <div class="flex items-center gap-1"><div class="w-3 h-3 rounded-sm" style="background-color:#8C749E"></div><span class="text-[11px] text-[#8C8491]">活跃期</span></div>
         </div>
         <div class="flex gap-1.5 mb-5 justify-center flex-wrap">${Object.keys(CAT).filter(k=>k!=='other').map(renderCatToggle).join('')}</div>
       `;
@@ -700,8 +712,22 @@
 
       const availStats = ALL_STATS.filter(s=>s.k!=='all').slice(0, 4);
       let statusBtnHtml = availStats.map(s => {
-        let timeStr = state.scheduleDates[cv.id] && s.k === 'scheduled' ? ` (${state.scheduleDates[cv.id]})` : '';
-        return `<button onclick="setPlantStatus('${cv.id}', '${s.k}')" class="flex-1 py-2.5 px-1 rounded-xl text-[12px] font-bold transition-all border ${status===s.k?'text-white shadow-sm':'bg-white text-[#8C8491] border-[#EFEBF2]'}" style="${status===s.k ? `background-color:${s.fg||'#5C4B66'}; border-color:${s.fg||'#5C4B66'}` : ''}">${s.l}${timeStr}</button>`;
+        let label = s.l;
+        let subLabel = '';
+        if (s.k === 'scheduled' && status === s.k && state.scheduleDates[cv.id]) {
+          subLabel = state.scheduleDates[cv.id];
+        }
+        if (s.k === 'purchased' && status === s.k) {
+          const pd = state.plantDates[cv.id];
+          if (pd) {
+            const days = Math.floor((Date.now() - new Date(pd).getTime()) / 86400000);
+            subLabel = days + '天';
+          } else {
+            subLabel = '可设日期';
+          }
+        }
+        const subHtml = subLabel ? `<div class="text-[9px] opacity-75 font-normal leading-tight mt-0.5">${subLabel}</div>` : '';
+        return `<button onclick="setPlantStatus('${cv.id}', '${s.k}')" class="flex-1 py-2 px-1 rounded-xl text-[12px] font-bold transition-all border ${status===s.k?'text-white shadow-sm':'bg-white text-[#8C8491] border-[#EFEBF2]'}" style="${status===s.k ? `background-color:${s.fg||'#5C4B66'}; border-color:${s.fg||'#5C4B66'}` : ''}">${label}${subHtml}</button>`;
       }).join('');
 
       let moreStatHtml = `<select onchange="setPlantStatus('${cv.id}', this.value)" class="w-10 flex-shrink-0 bg-white border border-[#EFEBF2] rounded-xl text-center text-[#8C8491] font-bold focus:outline-none"><option value="" disabled>更</option>`;
@@ -710,7 +736,6 @@
 
       return `
         <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 flex items-center justify-between border-b border-[#EFEBF2]">
-          <div class="w-12 h-1.5 bg-[#EFEBF2] rounded-full absolute left-1/2 -translate-x-1/2 top-2"></div>
           <span class="text-[12px] font-bold font-serif-elegant text-[#8C8491] w-10">${state.sel+1}/${filteredGroups.length}</span>
           <div class="flex-1 flex items-center justify-center gap-2 overflow-hidden">
             <h2 class="font-bold text-[22px] text-[#2D2630] font-serif-elegant truncate">${g.n}</h2>
@@ -728,9 +753,19 @@
           </div>
           
           ${tabsHtml}
-          <div onclick="openEditVarModal('${g.id}', '${cv.id}')" class="bg-white border border-[#EFEBF2] rounded-[16px] p-4 shadow-sm cursor-pointer active:bg-[#F9F7F5] transition-colors animate-fadeIn">
-            ${cv.d ? `<p class="text-[14px] text-[#2D2630] read-friendly">${cv.d}</p>` : `<p class="text-[13px] text-[#B8B0BD] italic">点击添加品种备注…</p>`}
-            <div class="flex items-center justify-end mt-2 gap-1"><span class="text-[11px] text-[#C4B7CB]">✎ 编辑品种信息</span></div>
+          <div class="bg-white border border-[#EFEBF2] rounded-[16px] shadow-sm animate-fadeIn overflow-hidden">
+            <div onclick="openEditVarModal('${g.id}', '${cv.id}')" class="p-4 cursor-pointer active:bg-[#F9F7F5] transition-colors">
+              ${cv.d ? `<p class="text-[14px] text-[#2D2630] read-friendly">${cv.d}</p>` : `<p class="text-[13px] text-[#B8B0BD] italic">点击添加品种备注…</p>`}
+            </div>
+            <div class="flex items-stretch border-t border-[#F2EFF4]">
+              <button onclick="toggleStar('${cv.id}')" class="flex-1 py-2 text-[11px] font-medium transition-colors flex items-center justify-center gap-1 ${isStar ? 'bg-[#FFFDF5] text-[#D4AF37]' : 'bg-white text-[#B8B0BD] active:bg-[#F9F7F5]'}">
+                <span class="text-[12px]">${isStar ? '★' : '☆'}</span> ${isStar ? '已置顶此品种' : '置顶此品种'}
+              </button>
+              <div class="w-px bg-[#F2EFF4]"></div>
+              <button onclick="openEditVarModal('${g.id}', '${cv.id}')" class="flex-1 py-2 text-[11px] font-medium text-[#B8B0BD] active:bg-[#F9F7F5] transition-colors">
+                ✎ 编辑品种信息
+              </button>
+            </div>
           </div>
 
           <div class="flex items-center gap-2 flex-wrap">
@@ -758,7 +793,7 @@
           <div class="grid grid-cols-4 gap-2">${gridHtml}</div>
 
           <div class="rounded-[14px] overflow-hidden border border-[#EFEBF2] bg-white shadow-sm p-1.5">
-            <div class="flex justify-between px-1 mb-1 items-center"><span class="text-[11px] font-bold text-[#8C8491]">📅 观赏期</span> <span class="text-[10px] text-[#C4B7CB]">${autoViewText(g.mo)}</span></div>
+            <div class="flex justify-between px-1 mb-1 items-center"><span class="text-[11px] font-bold text-[#8C8491]">📅 活跃期</span> <span class="text-[10px] text-[#C4B7CB]">${autoViewText(g.mo)}</span></div>
             <div class="rounded-lg overflow-hidden border border-[#FCFBF8]">
               <div class="flex h-6">${monthBarHtml}</div>
               <div class="flex h-5 bg-white border-t border-[#EFEBF2]">
@@ -768,10 +803,6 @@
           </div>
 
           <div class="flex gap-1.5">${statusBtnHtml}${ALL_STATS.length>5 ? moreStatHtml : ''}</div>
-          
-          <button onclick="toggleStar('${cv.id}')" class="w-full py-3 rounded-xl border flex justify-center items-center gap-1.5 text-[14px] font-bold font-serif-elegant transition-all ${isStar ? 'bg-[#FFFDF5] border-[#D4AF37] text-[#D4AF37] shadow-sm' : 'bg-white border-[#EFEBF2] text-[#8C8491]'}">
-            <span class="text-base">${isStar ? '★' : '☆'}</span> <span>${isStar ? '此品种已置顶' : '置顶此品种'}</span>
-          </button>
 
           <div class="rounded-2xl border shadow-sm bg-white border-[#EFEBF2] overflow-hidden">
             <div onclick="toggleLinksPanel('${cv.id}')" class="flex justify-between items-center px-4 py-3 cursor-pointer active:bg-[#F9F7F5] transition-colors">
@@ -795,12 +826,22 @@
           </div>
 
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
-            <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
-            <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
-            <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
-              <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+            <div onclick="toggleCareCollapse('${g.id}')" class="flex justify-between items-center cursor-pointer active:opacity-60 transition-opacity -m-1 p-1">
+              <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
+              <span class="text-[12px] text-[#B8B0BD] transition-transform" style="${careCollapsed[g.id] ? '' : 'transform:rotate(180deg)'}">▼</span>
             </div>
+            ${careCollapsed[g.id] ? `
+              <div onclick="toggleCareCollapse('${g.id}')" class="cursor-pointer rounded-xl bg-[#FCFBF8] border border-[#EFEBF2] p-3">
+                <p class="text-[13px] text-[#6A6071] read-friendly whitespace-pre-wrap" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${(g.care || '暂无说明').replace(/</g,'&lt;')}</p>
+                <p class="text-[11px] text-[#A69EAB] mt-2 text-center">点击展开 ↓</p>
+              </div>
+            ` : `
+              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+              <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
+                <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
+                <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+              </div>
+            `}
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
         </div>
@@ -840,7 +881,10 @@
     
     function openSheet(idx) {
       lockBodyScroll();
-      state.sel = idx; sheetState.varIdx = 0; sheetState.copied = false; sheetState.saved = false; renderSheet(); scrollActiveTabIntoView();
+      state.sel = idx; sheetState.varIdx = 0; sheetState.copied = false; sheetState.saved = false;
+      const g = filteredGroups[idx];
+      if (g) careCollapsed[g.id] = true;
+      renderSheet(); scrollActiveTabIntoView();
     }
     
     function closeSheet() {
@@ -944,10 +988,99 @@
 
     function setPlantStatus(id, s) { 
       if (s === 'scheduled') {
-        const date = prompt("请输入计划购买/种植的时间（如：2周后，下月）：");
-        if (date !== null) { state.scheduleDates[id] = date; saveState('scheduleDates', state.scheduleDates); }
+        openScheduleModal(id);
+        return;
+      }
+      if (s === 'purchased') {
+        // If already purchased and clicked again, open the date modal to edit
+        // If newly set to purchased, open the date modal for first time setup
+        saveState('states', { ...state.states, [id]: s });
+        openPlantDateModal(id);
+        state.appNeedsRender = true; renderSheet();
+        return;
       }
       saveState('states', { ...state.states, [id]: s }); state.appNeedsRender = true; renderSheet(); 
+    }
+    function openPlantDateModal(varId) {
+      const existing = state.plantDates[varId] || '';
+      const today = new Date().toISOString().slice(0,10);
+      const picker = document.createElement('div'); picker.id = 'plant-date-modal';
+      picker.innerHTML = `
+        <div class="fixed inset-0 z-[70] flex items-end justify-center font-sans" onclick="document.getElementById('plant-date-modal').remove()">
+          <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+          <div class="relative bg-[var(--bg-cream)] rounded-t-[28px] w-full max-w-sm p-5 animate-slideUp" onclick="event.stopPropagation()" style="padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))">
+            <h3 class="text-[16px] font-bold text-[#4B7059] mb-1 flex items-center gap-1.5">🌱 ${existing ? '修改种植日期' : '记录种植日期'}</h3>
+            <p class="text-[12px] text-[#8C8491] mb-4">${existing ? '可以更新，也可以跳过不改' : '可以记下来，方便以后追踪生长。不想记也可以跳过～'}</p>
+            <div class="space-y-3">
+              <div onclick="triggerDatePicker('pd_date')" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#4B7059]/40 bg-[#EAF0EC] cursor-pointer active:bg-[#DDE8DF] transition-colors">
+                <span id="pd_date_show" class="text-[13px] font-bold text-[#4B7059]">${existing ? '📅 ' + existing : '📅 点这里选日期'}</span>
+                <span class="text-[12px] text-[#4B7059]/60">▼</span>
+                <input id="pd_date" type="date" value="${existing || today}" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" />
+              </div>
+              <div class="flex gap-2">
+                <button onclick="document.getElementById('plant-date-modal').remove()" class="flex-1 py-3 bg-white border border-[#EFEBF2] text-[#8C8491] rounded-xl font-bold text-[13px]">${existing ? '不改了' : '跳过'}</button>
+                <button onclick="savePlantDateFromModal('${varId}')" class="flex-1 py-3 bg-[#4B7059] text-white rounded-xl font-bold text-[13px] tracking-widest shadow-md">确 认</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(picker);
+      document.getElementById('pd_date').addEventListener('change', function() {
+        document.getElementById('pd_date_show').textContent = this.value ? '📅 ' + this.value : '📅 点这里选日期';
+      });
+    }
+    function savePlantDateFromModal(varId) {
+      const d = document.getElementById('pd_date').value;
+      if (d) { state.plantDates[varId] = d; saveState('plantDates', state.plantDates); }
+      document.getElementById('plant-date-modal')?.remove();
+      state.appNeedsRender = true; renderSheet(); showToast("🌱 种植日期已记录");
+    }
+    function triggerDatePicker(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      // showPicker() is the modern way — works on desktop Chrome/Edge/Safari 16+
+      // Fallback: focus + click for older browsers
+      try {
+        if (typeof input.showPicker === 'function') { input.showPicker(); }
+        else { input.focus(); input.click(); }
+      } catch(e) { input.focus(); input.click(); }
+    }
+    function openScheduleModal(varId) {
+      const existingText = state.scheduleDates[varId] || '';
+      const existingDate = state.scheduleRealDates[varId] || '';
+      const picker = document.createElement('div'); picker.id = 'schedule-modal';
+      picker.innerHTML = `
+        <div class="fixed inset-0 z-[70] flex items-end justify-center font-sans" onclick="document.getElementById('schedule-modal').remove()">
+          <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+          <div class="relative bg-[var(--bg-cream)] rounded-t-[28px] w-full max-w-sm p-5 animate-slideUp" onclick="event.stopPropagation()" style="padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))">
+            <h3 class="text-[16px] font-bold text-[#536F8A] mb-3 flex items-center gap-1.5">📅 排期种植</h3>
+            <div class="space-y-3">
+              <input id="sch_text" type="text" value="${existingText}" placeholder="备注：如下周、天暖后、最后霜冻后…" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] focus:outline-none font-bold" />
+              <div onclick="triggerDatePicker('sch_date')" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#536F8A]/40 bg-[#E8EFF5] cursor-pointer active:bg-[#D5E2EE] transition-colors">
+                <span id="sch_date_show" class="text-[13px] font-bold text-[#536F8A]">${existingDate ? '⏰ ' + existingDate : '📅（可选）设精确日期，到时会提醒你'}</span>
+                <span class="text-[12px] text-[#536F8A]/60">▼</span>
+                <input id="sch_date" type="date" value="${existingDate}" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" />
+              </div>
+              <button onclick="saveSchedule('${varId}')" class="w-full py-3.5 bg-[#536F8A] text-white rounded-xl font-bold tracking-widest shadow-md">确 认</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(picker);
+      // Update display when date changes
+      document.getElementById('sch_date').addEventListener('change', function() {
+        const v = this.value;
+        document.getElementById('sch_date_show').textContent = v ? '⏰ ' + v : '📅（可选）设精确日期，到时会提醒你';
+      });
+    }
+    function saveSchedule(varId) {
+      const text = document.getElementById('sch_text').value.trim();
+      const realDate = document.getElementById('sch_date').value;
+      if (text) { state.scheduleDates[varId] = text; saveState('scheduleDates', state.scheduleDates); }
+      if (realDate) { state.scheduleRealDates[varId] = realDate; saveState('scheduleRealDates', state.scheduleRealDates); }
+      document.getElementById('schedule-modal')?.remove();
+      saveState('states', { ...state.states, [varId]: 'scheduled' }); state.appNeedsRender = true; renderSheet();
     }
     
     function toggleStar(id) {
@@ -957,6 +1090,7 @@
       saveState('stars', st); state.appNeedsRender = true; renderSheet();
     }
     function updateNoteLocal(id, val) { state.notes[id] = val; localStorage.setItem('mg3-n', JSON.stringify(state.notes)); }
+    function savePlantDate(varId, val) { state.plantDates[varId] = val; saveState('plantDates', state.plantDates); renderSheet(); showToast("🌱 种植日期已记录"); }
     function updateCare(groupId, val) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].care = val; saveState('customMainInfo', state.customMainInfo); }
     function updateSeed(groupId, val) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].seed = val; saveState('customMainInfo', state.customMainInfo); }
     function cycleAttr(groupId, attr, options) { /* replaced by showAttrPicker */ }
@@ -1036,6 +1170,11 @@
 
     /* ─── 品种链接收藏 ─── */
     let linksExpanded = {};
+    let careCollapsed = {};
+    function toggleCareCollapse(groupId) {
+      careCollapsed[groupId] = !careCollapsed[groupId];
+      renderSheet();
+    }
     function toggleLinksPanel(varId) {
       const body = document.getElementById('links-body-' + varId);
       const arrow = document.getElementById('links-arrow-' + varId);
@@ -1082,7 +1221,7 @@
       renderSheet(); showToast("已移除");
     }
     function toggleCalCat(cat) { if (state.calCats.includes(cat)) { if(state.calCats.length>1) state.calCats = state.calCats.filter(c=>c!==cat); } else state.calCats.push(cat); renderApp(); }
-    function autoViewText(mo) { const active = mo.map((v,i)=>v>0?i+1:null).filter(x=>x); if(active.length===12) return "全年观赏"; if(active.length===0) return "待设置"; const min=Math.min(...active), max=Math.max(...active); return "观赏期 "+min+"月-"+max+"月"; }
+    function autoViewText(mo) { const active = mo.map((v,i)=>v>0?i+1:null).filter(x=>x); if(active.length===12) return "全年活跃"; if(active.length===0) return "待设置"; const min=Math.min(...active), max=Math.max(...active); return "活跃期 "+min+"月-"+max+"月"; }
 
     function promptNewStat() {
       const n = prompt("请输入新分类名称：");
@@ -1196,7 +1335,7 @@
               </div>
               <div><p class="text-xs font-bold text-[#8C8491] mb-1">预计宽度/冠幅(cm)</p><input id="em_wcm" value="${g.wcm||''}" placeholder="如：30-50蔓延" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white focus:outline-none" /></div>
               <div>
-                <p class="text-xs font-bold text-[#8C8491] mb-1 flex justify-between items-center"><span>观赏期设置</span><span class="flex gap-1"><button onclick="toggleAllMonths(true)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">全年</button><button onclick="setWinterDormant()" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">冬季休眠</button><button onclick="toggleAllMonths(false)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">清空</button></span></p>
+                <p class="text-xs font-bold text-[#8C8491] mb-1 flex justify-between items-center"><span>活跃期设置</span><span class="flex gap-1"><button onclick="toggleAllMonths(true)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">全年</button><button onclick="setWinterDormant()" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">冬季休眠</button><button onclick="toggleAllMonths(false)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">清空</button></span></p>
                 <div class="grid grid-cols-6 gap-1">${monthsHtml}</div>
               </div>
               <button onclick="saveMainInfo('${g.id}')" class="w-full py-3.5 bg-[#5C4B66] text-white rounded-xl font-bold tracking-widest mt-2 shadow-md">保 存 修 改</button>
@@ -1268,6 +1407,7 @@
     function selectPlantMatch(idx) {
       const p = PLANT_DB[idx]; if(!p) return;
       tempMatchedPlant = p;
+      document.getElementById('ap_n').value = p.n;
       document.getElementById('ap_e').value = p.e;
       document.getElementById('ap_cat').value = p.cat;
       document.getElementById('ap_z').value = p.z;
@@ -1317,7 +1457,7 @@
                 <select id="ap_cat" class="px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] text-[#5C4B66] outline-none font-bold">${Object.keys(CAT).map(k=>`<option value="${k}">${CAT[k].l}</option>`).join('')}</select>
                 <select id="ap_z" class="px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] text-[#5C4B66] outline-none font-bold">${ZONES.map(z=>`<option value="${z.k}">${z.l}</option>`).join('')}</select>
               </div>
-              <div class="space-y-2 pt-1"><p class="text-[12px] text-[#8C8491] font-bold flex justify-between items-center"><span>观赏期（默认全年）</span><span class="flex gap-1"><button onclick="setWinterDormant()" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">冬季休眠</button><button onclick="toggleAllMonths(false)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">清空</button></span></p><div class="grid grid-cols-6 gap-2">${monthsHtml}</div></div>
+              <div class="space-y-2 pt-1"><p class="text-[12px] text-[#8C8491] font-bold flex justify-between items-center"><span>活跃期（默认全年）</span><span class="flex gap-1"><button onclick="setWinterDormant()" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">冬季休眠</button><button onclick="toggleAllMonths(false)" class="text-[11px] px-2 py-1 rounded bg-[#EFEBF2] text-[#5C4B66] font-bold">清空</button></span></p><div class="grid grid-cols-6 gap-2">${monthsHtml}</div></div>
               <button onclick="saveNewPlant()" class="w-full py-4 bg-[#5C4B66] text-white rounded-xl font-bold tracking-widest shadow-md">确 认 添 加</button>
             </div>
           </div>
@@ -1380,14 +1520,144 @@
         </div>
       `;
     }
-    function exportData() { localStorage.setItem('mg3-lastbackup', Date.now().toString()); const dataStr = JSON.stringify({ s: state.states, n: state.notes, st: state.stars, cp: state.customPlants, cs: state.customStats, ci: state.customImages, cv: state.customVars, cvi: state.customVarsInfo, delv: state.deletedVars, cname: state.customNames, cmain: state.customMainInfo, dates: state.scheduleDates, inv: state.inventory, invSort: state.invSort, vl: state.varLinks }); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([dataStr], { type: "application/json" })); a.download = `花园图鉴备份_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("已导出，请妥善保存"); closeModal(); }
-    function importData(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(ev) { try { const d = JSON.parse(ev.target.result); if(d.s) saveState('states', d.s); if(d.n) saveState('notes', d.n); if(d.st) saveState('stars', d.st); if(d.cp) saveState('customPlants', d.cp); if(d.cs) saveState('customStats', d.cs); if(d.ci) { for(const [k,v] of Object.entries(d.ci)) { await saveImgDB(k, v); } } if(d.cv) saveState('customVars', d.cv); if(d.cvi) saveState('customVarsInfo', d.cvi); if(d.delv) saveState('deletedVars', d.delv); if(d.cname) saveState('customNames', d.cname); if(d.cmain) saveState('customMainInfo', d.cmain); if(d.dates) saveState('scheduleDates', d.dates); if(d.inv) saveState('inventory', d.inv); if(d.invSort) saveState('invSort', d.invSort); if(d.vl) saveState('varLinks', d.vl); alert("恢复成功，即将重新加载！"); location.reload(); } catch(err) { alert("解析失败，请检查文件。"); } }; reader.readAsText(file); }
+    function exportData() { localStorage.setItem('mg3-lastbackup', Date.now().toString()); const dataStr = JSON.stringify({ s: state.states, n: state.notes, st: state.stars, cp: state.customPlants, cs: state.customStats, ci: state.customImages, cv: state.customVars, cvi: state.customVarsInfo, delv: state.deletedVars, cname: state.customNames, cmain: state.customMainInfo, dates: state.scheduleDates, srd: state.scheduleRealDates, pd: state.plantDates, inv: state.inventory, invSort: state.invSort, vl: state.varLinks }); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([dataStr], { type: "application/json" })); a.download = `花园图鉴备份_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("已导出，请妥善保存"); closeModal(); }
+    function importData(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(ev) { try { const d = JSON.parse(ev.target.result); if(d.s) saveState('states', d.s); if(d.n) saveState('notes', d.n); if(d.st) saveState('stars', d.st); if(d.cp) saveState('customPlants', d.cp); if(d.cs) saveState('customStats', d.cs); if(d.ci) { for(const [k,v] of Object.entries(d.ci)) { await saveImgDB(k, v); } } if(d.cv) saveState('customVars', d.cv); if(d.cvi) saveState('customVarsInfo', d.cvi); if(d.delv) saveState('deletedVars', d.delv); if(d.cname) saveState('customNames', d.cname); if(d.cmain) saveState('customMainInfo', d.cmain); if(d.dates) saveState('scheduleDates', d.dates); if(d.srd) saveState('scheduleRealDates', d.srd); if(d.pd) saveState('plantDates', d.pd); if(d.inv) saveState('inventory', d.inv); if(d.invSort) saveState('invSort', d.invSort); if(d.vl) saveState('varLinks', d.vl); alert("恢复成功，即将重新加载！"); location.reload(); } catch(err) { alert("解析失败，请检查文件。"); } }; reader.readAsText(file); }
+
+    /* ─── 天气 ─── */
+    const WEATHER_TEXT = { 0:'晴', 1:'晴朗', 2:'多云', 3:'阴', 45:'雾', 48:'雾', 51:'毛毛雨', 53:'小雨', 55:'小雨', 56:'冻雨', 57:'冻雨', 61:'小雨', 63:'中雨', 65:'大雨', 66:'冻雨', 67:'冻雨', 71:'小雪', 73:'中雪', 75:'大雪', 77:'雪', 80:'阵雨', 81:'阵雨', 82:'暴雨', 85:'阵雪', 86:'阵雪', 95:'雷雨', 96:'雷雨', 99:'雷雨' };
+    let cachedWeatherHtml = '';
+    function renderWeatherCard() {
+      const card = document.getElementById('weather-card');
+      if (card && cachedWeatherHtml) { card.innerHTML = cachedWeatherHtml; card.classList.remove('hidden'); }
+    }
+    function fetchWeather() {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=49.32&longitude=-123.07&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=America/Vancouver&forecast_days=3')
+        .then(r => r.json()).then(d => {
+          if(!d.current) return;
+          const cur = d.current;
+          const text = WEATHER_TEXT[cur.weather_code] || '晴';
+          const temp = Math.round(cur.temperature_2m);
+          let forecastHtml = '';
+          if(d.daily) {
+            const dayNames = ['日','一','二','三','四','五','六'];
+            for(let i=1; i<Math.min(d.daily.time.length, 3); i++) {
+              const dt = new Date(d.daily.time[i] + 'T12:00:00');
+              const dayN = dayNames[dt.getDay()];
+              const hi = Math.round(d.daily.temperature_2m_max[i]);
+              const lo = Math.round(d.daily.temperature_2m_min[i]);
+              const fText = WEATHER_TEXT[d.daily.weather_code[i]] || '';
+              forecastHtml += `<span>周${dayN} ${fText} ${lo}°~${hi}°</span>`;
+            }
+          }
+          cachedWeatherHtml = `<div class="flex items-center justify-center gap-2 flex-wrap text-[11px] font-medium tracking-wide" style="color:#8C8491">
+            <span class="font-bold" style="color:#6A6071">今日 ${text} ${temp}°</span>
+            <span style="color:#C4B7CB">·</span>
+            ${forecastHtml.replace(/<\/span><span>/g, '</span><span style="color:#C4B7CB">·</span><span>')}
+          </div>`;
+          renderWeatherCard();
+        }).catch(function(){});
+    }
+
+    /* ─── 开屏提醒：排期到期 ─── */
+    function checkScheduleReminders() {
+      const today = new Date().toISOString().slice(0,10);
+      let dueItems = [];
+      for (const [varId, dateStr] of Object.entries(state.scheduleRealDates)) {
+        if (dateStr <= today && (state.states[varId] === 'scheduled')) {
+          // Find plant name
+          const g = ALL_GROUPS.find(gr => gr.allVars.some(v => v.id === varId));
+          if (g) {
+            const v = g.allVars.find(v => v.id === varId);
+            dueItems.push({ varId, name: g.n + (v && v.n !== '原品种' ? ' · ' + v.n : '') });
+          }
+        }
+      }
+      if (dueItems.length === 0) return;
+      setTimeout(function() {
+        const names = dueItems.map(d => d.name).join('、');
+        const reminder = document.createElement('div');
+        reminder.id = 'schedule-reminder';
+        reminder.innerHTML = `
+          <div class="fixed inset-0 z-[85] flex items-center justify-center font-sans px-6" onclick="document.getElementById('schedule-reminder').remove()">
+            <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+            <div class="bg-[var(--bg-cream)] rounded-[28px] w-full max-w-sm p-6 relative z-10 animate-slideUp shadow-2xl border border-[#EAF0EC]" onclick="event.stopPropagation()">
+              <div class="text-center mb-3"><span class="text-4xl">🌱</span></div>
+              <h3 class="text-[17px] font-bold text-[#4B7059] font-serif-elegant text-center mb-2">该种植啦～</h3>
+              <p class="text-[14px] text-[#2D2630] text-center font-bold leading-relaxed mb-4">${names}</p>
+              <p class="text-[12px] text-[#8C8491] text-center mb-4">排期时间到啦，可以准备动手种了~</p>
+              <button onclick="document.getElementById('schedule-reminder').remove()" class="w-full py-3 bg-[#4B7059] text-white rounded-xl font-bold tracking-widest shadow-md">知道啦 🌿</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(reminder);
+      }, 1200);
+    }
+
+    /* ─── Splash 诗句 ─── */
+    const SPLASH_QUOTES = [
+      // 日常温暖系
+      ["🌷","今日宜：浇花、喝茶、什么都不做"],
+      ["🌻","花开的时候，不讲道理"],
+      ["☀️","今天适合种点什么呢"],
+      ["☀️","出去看看吧，说不定昨晚偷偷长了"],
+      ["🌧️","下雨天好，省了浇水的活儿"],
+      ["🪴","今天的花园，跟昨天又不一样了"],
+      ["🍃","风一吹，全园都在摇头晃脑"],
+      ["🌱","每颗种子，都是一个小小的期待"],
+      // 经典诗意系
+      ["🌸","种一棵树最好的时间是十年前"],
+      ["🌿","花开不同赏 花落不同悲"],
+      ["🌾","春种一粒粟 秋收万颗子"],
+      ["🏡","园中自有四时景"],
+      ["🌼","采菊东篱下 悠然见南山"],
+      ["🌺","苔花如米小 也学牡丹开"],
+      ["🌸","满园春色关不住 一枝红杏出墙来"],
+      ["🌧️","随风潜入夜 润物细无声"],
+      ["🌙","晨兴理荒秽 带月荷锄归"],
+      ["🔥","绿蚁新醅酒 红泥小火炉"],
+      // 生活哲学系
+      ["🫖","得闲饮茶，等花慢慢开"],
+      ["🍀","种花的人，运气不会太差"],
+      ["🌿","把日子过成花园的样子"],
+      ["🪻","A garden is a friend you can visit anytime"],
+      ["🌻","The earth laughs in flowers — Emerson"],
+      ["🌱","土里的事，急不来"],
+      // 小彩蛋
+      ["🏵️","钟家花园 今日开张"],
+      ["🍵","海芬今天浇花了吗？"],
+      ["🎋","花鸟鱼虫 柴米油盐 都是好日子"],
+      ["🌸","不用着急，花有花的时间表"],
+      ["🌷","每一朵花都记得 是谁种下的它"],
+      ["🐌","蜗牛来了。说明你的菜很好吃。"],
+    ];
 
     // Boot: migrate images to IndexedDB, then load and render
     (async function boot() {
+      // Show splash screen
+      const sq = SPLASH_QUOTES[Math.floor(Math.random() * SPLASH_QUOTES.length)];
+      const splash = document.createElement('div');
+      splash.id = 'splash-screen';
+      splash.style.cssText = 'position:fixed;inset:0;z-index:9998;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FCFBF8;transition:opacity 0.6s ease;';
+      splash.innerHTML = `
+        <div style="text-align:center;animation:fadeIn .5s ease-out;">
+          <div style="font-size:3rem;margin-bottom:1rem;">${sq[0]}</div>
+          <p style="font-family:Georgia,serif;font-size:15px;color:#5C4B66;max-width:280px;line-height:1.8;letter-spacing:0.05em;">${sq[1]}</p>
+        </div>
+      `;
+      document.body.appendChild(splash);
+
       await migrateImgsToIDB();
       state.customImages = await loadAllImgs();
       renderApp();
+
+      // Fade out splash
+      setTimeout(function() {
+        splash.style.opacity = '0';
+        setTimeout(function() { splash.remove(); }, 600);
+      }, 1200);
+
+      // Fetch weather
+      setTimeout(fetchWeather, 300);
 
       syncViewportPanels();
       if (window.visualViewport) {
@@ -1404,6 +1674,9 @@
           ensureSheetFieldVisible(e.target);
         }
       });
+
+      // Check schedule reminders
+      checkScheduleReminders();
 
       // Version announcement
       const lastVersion = localStorage.getItem('mg3-version');
@@ -1427,7 +1700,7 @@
             </div>
           `;
           document.body.appendChild(modal);
-        }, 500);
+        }, 2000);
       }
 
       // Gentle backup reminder
