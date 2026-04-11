@@ -720,10 +720,10 @@
 
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
             <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
-            <textarea oninput="updateCare('${g.id}', this.value); autoResize(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all overflow-y-auto" rows="4" style="min-height:100px; max-height:250px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+            <textarea oninput="updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-colors overflow-y-auto" style="height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
             <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
               <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-              <textarea oninput="updateSeed('${g.id}', this.value); autoResize(this)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none bg-transparent read-friendly overflow-y-auto" rows="2" style="max-height:250px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+              <textarea oninput="updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none bg-transparent read-friendly overflow-y-auto" style="height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
             </div>
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
@@ -740,7 +740,7 @@
 
       let existingContent = document.getElementById('sheet-content');
       if (existingContent) {
-        let st = existingContent.scrollTop; existingContent.innerHTML = contentHtml; const ta = document.getElementById('care_ta_' + g.id); if(ta) autoResize(ta); const sta = document.getElementById('seed_ta_' + g.id); if(sta) autoResize(sta); existingContent.scrollTop = st;
+        let st = existingContent.scrollTop; existingContent.innerHTML = contentHtml; existingContent.scrollTop = st;
       } else {
         root.innerHTML = `
           <div class="fixed inset-0 z-50 flex flex-col font-sans">
@@ -750,7 +750,6 @@
             </div>
           </div>
         `;
-        setTimeout(function() { const ta = document.getElementById('care_ta_' + g.id); if(ta) autoResize(ta); const sta = document.getElementById('seed_ta_' + g.id); if(sta) autoResize(sta); }, 50);
       }
     }
 
