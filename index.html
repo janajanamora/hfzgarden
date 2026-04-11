@@ -341,10 +341,8 @@
 
     function autoResizeTextarea(el) {
       if (!el) return;
-      requestAnimationFrame(function() {
-        el.style.height = 'auto';
-        el.style.height = (el.scrollHeight + 2) + 'px';
-      });
+      el.style.height = 'auto';
+      el.style.height = (el.scrollHeight + 2) + 'px';
     }
 
     function autoResizeSheetTextareas() {
@@ -354,6 +352,23 @@
 
     function ensureSheetFieldVisible(el) {
       if (!el) return;
+      // For tall textareas, don't fight with iOS's native caret-scroll behavior.
+      // Only step in if the element is effectively hidden (below keyboard or offscreen).
+      if (el.tagName === 'TEXTAREA') {
+        const vv = window.visualViewport;
+        const visibleBottom = vv ? (vv.offsetTop + vv.height) : window.innerHeight;
+        const rect = el.getBoundingClientRect();
+        // Element's top is below visible area OR element's bottom is above visible area
+        const hiddenBelow = rect.top > visibleBottom - 60;
+        const hiddenAbove = rect.bottom < 60;
+        if (!hiddenBelow && !hiddenAbove) return; // visible enough, let iOS handle caret
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            el.scrollIntoView({ block: hiddenBelow ? 'end' : 'start', inline: 'nearest' });
+          });
+        });
+        return;
+      }
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {
           el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
