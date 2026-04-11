@@ -68,8 +68,9 @@
     /* ─── 版本与更新公告 ─── */
     const APP_VERSION = "2.2";
     const APP_CHANGELOG = [
-      "🔍 植物智能匹配 — 添加新植物时，自动匹配81种常见园艺植物的属性",
+      "🔍 植物智能匹配 — 添加新植物时输入名字自动匹配81种常见园艺植物的属性",
       "🥬 新增分类 — 果蔬、香草类别，花历筛选同步更新",
+      "📎 参考链接收藏 — 每个品种可保存有用的文章、视频、对话链接",
       "🌱 养护笔记标注「所有品种通用」— 修改一个品种的养护笔记会同步到同类所有品种",
       "📝 品种备注更直观 — 每个品种下方增加可点击的备注卡片，点击即可编辑",
       "🔄 切换品种不再跳页 — 品种标签自动滚动到当前选中项",
@@ -270,6 +271,7 @@
       inventory:    JSON.parse(localStorage.getItem('mg3-inv') || '[]'),
       invSort:      localStorage.getItem('mg3-inv-sort') || 'priority',
       customStats:  JSON.parse(localStorage.getItem('mg3-cs') || '[]'),
+      varLinks:     JSON.parse(localStorage.getItem('mg3-vl') || '{}'),
       zf: 'all', sf: 'all', stf: 'all', tab: 'guide', sel: null,
       calCats: ['veggie', 'herb', 'flower', 'foliage', 'ground', 'succ', 'tree', 'shrub', 'vine']
     };
@@ -313,7 +315,8 @@
         'states':'mg3-s', 'notes':'mg3-n', 'stars':'mg3-stars', 'customPlants':'mg3-cp', 
         'customVars':'mg3-cv', 'customVarsInfo':'mg3-cvi', 'deletedVars':'mg3-delv',
         'customNames':'mg3-cname', 'customStats':'mg3-cs', 'customMainInfo':'mg3-cmain', 
-        'scheduleDates':'mg3-dates', 'inventory':'mg3-inv', 'invSort':'mg3-inv-sort'
+        'scheduleDates':'mg3-dates', 'inventory':'mg3-inv', 'invSort':'mg3-inv-sort',
+        'varLinks':'mg3-vl'
       }[key];
       if(lsKey) localStorage.setItem(lsKey, typeof val === 'string' ? val : JSON.stringify(val));
     }
@@ -699,6 +702,22 @@
             <span class="text-base">${isStar ? '★' : '☆'}</span> <span>${isStar ? '此品种已置顶' : '置顶此品种'}</span>
           </button>
 
+          <div class="rounded-2xl p-4 border shadow-sm bg-white border-[#EFEBF2] space-y-2">
+            <div class="flex justify-between items-center">
+              <p class="text-[13px] font-bold text-[#536F8A] flex items-center gap-1.5"><span class="text-base">📎</span> 参考链接</p>
+              <button onclick="openAddLinkModal('${cv.id}')" class="text-[12px] text-[#536F8A] font-bold px-2.5 py-1 rounded-lg bg-[#E8EFF5] active:bg-[#D5E2EE] transition-colors">+ 添加</button>
+            </div>
+            ${(state.varLinks[cv.id] && state.varLinks[cv.id].length > 0) ? state.varLinks[cv.id].map((lk, li) => `
+              <div class="flex items-center gap-2 py-2 border-t border-[#F2EFF4]">
+                <a href="${lk.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 active:opacity-60">
+                  <p class="text-[13px] font-bold text-[#2D2630] truncate">${lk.title || '未命名链接'}</p>
+                  <p class="text-[11px] text-[#B8B0BD] truncate">${lk.url}</p>
+                </a>
+                <button onclick="removeVarLink('${cv.id}', ${li})" class="text-[#C4B7CB] text-[14px] px-2 flex-shrink-0 active:text-red-400">✕</button>
+              </div>
+            `).join('') : '<p class="text-[12px] text-[#C4B7CB] py-1">收藏有用的文章、视频、对话链接…</p>'}
+          </div>
+
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
             <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
             <textarea oninput="updateCare('${g.id}', this.value); autoResize(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all overflow-hidden" rows="4" style="min-height:100px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
@@ -885,6 +904,42 @@
     function editSize(groupId) { const g = ALL_GROUPS.find(gr=>gr.id===groupId); const val = prompt("输入高度范围(cm)，如 20-30", g?.hcm||""); if(val !== null) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].hcm = val.trim(); saveState('customMainInfo', state.customMainInfo); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr=>gr.id===groupId); state.appNeedsRender = true; renderSheet(); } }
     function saveCareAndNote(groupId, varId) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].note = ''; saveState('customMainInfo', state.customMainInfo); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 已保存"); }
     function saveNoteUi() { sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 笔记已保存"); }
+
+    /* ─── 品种链接收藏 ─── */
+    function openAddLinkModal(varId) {
+      const picker = document.createElement('div'); picker.id = 'link-modal';
+      picker.innerHTML = `
+        <div class="fixed inset-0 z-[70] flex items-end justify-center font-sans" onclick="document.getElementById('link-modal').remove()">
+          <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+          <div class="relative bg-[var(--bg-cream)] rounded-t-[28px] w-full max-w-sm p-5 animate-slideUp" onclick="event.stopPropagation()" style="padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))">
+            <h3 class="text-[16px] font-bold text-[#536F8A] mb-4 flex items-center gap-1.5">📎 添加参考链接</h3>
+            <div class="space-y-3">
+              <input id="lk_url" type="url" placeholder="粘贴链接地址" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] focus:outline-none" />
+              <input id="lk_title" type="text" placeholder="备注名称（选填）" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] focus:outline-none font-bold" />
+              <button onclick="saveVarLink('${varId}')" class="w-full py-3.5 bg-[#536F8A] text-white rounded-xl font-bold tracking-widest shadow-md">确 认 添 加</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(picker);
+    }
+    function saveVarLink(varId) {
+      const url = document.getElementById('lk_url').value.trim();
+      if(!url) return alert("请填写链接地址");
+      const title = document.getElementById('lk_title').value.trim() || url.replace(/https?:\/\//, '').split('/')[0];
+      if(!state.varLinks[varId]) state.varLinks[varId] = [];
+      state.varLinks[varId].push({ url, title });
+      saveState('varLinks', state.varLinks);
+      document.getElementById('link-modal')?.remove();
+      renderSheet(); showToast("📎 链接已收藏");
+    }
+    function removeVarLink(varId, idx) {
+      if(!state.varLinks[varId]) return;
+      state.varLinks[varId].splice(idx, 1);
+      if(state.varLinks[varId].length === 0) delete state.varLinks[varId];
+      saveState('varLinks', state.varLinks);
+      renderSheet(); showToast("已移除");
+    }
     function toggleCalCat(cat) { if (state.calCats.includes(cat)) { if(state.calCats.length>1) state.calCats = state.calCats.filter(c=>c!==cat); } else state.calCats.push(cat); renderApp(); }
     function autoViewText(mo) { const active = mo.map((v,i)=>v>0?i+1:null).filter(x=>x); if(active.length===12) return "全年观赏"; if(active.length===0) return "待设置"; const min=Math.min(...active), max=Math.max(...active); return "观赏期 "+min+"月-"+max+"月"; }
 
@@ -1184,8 +1239,8 @@
         </div>
       `;
     }
-    function exportData() { localStorage.setItem('mg3-lastbackup', Date.now().toString()); const dataStr = JSON.stringify({ s: state.states, n: state.notes, st: state.stars, cp: state.customPlants, cs: state.customStats, ci: state.customImages, cv: state.customVars, cvi: state.customVarsInfo, delv: state.deletedVars, cname: state.customNames, cmain: state.customMainInfo, dates: state.scheduleDates, inv: state.inventory, invSort: state.invSort }); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([dataStr], { type: "application/json" })); a.download = `花园图鉴备份_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("已导出，请妥善保存"); closeModal(); }
-    function importData(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(ev) { try { const d = JSON.parse(ev.target.result); if(d.s) saveState('states', d.s); if(d.n) saveState('notes', d.n); if(d.st) saveState('stars', d.st); if(d.cp) saveState('customPlants', d.cp); if(d.cs) saveState('customStats', d.cs); if(d.ci) { for(const [k,v] of Object.entries(d.ci)) { await saveImgDB(k, v); } } if(d.cv) saveState('customVars', d.cv); if(d.cvi) saveState('customVarsInfo', d.cvi); if(d.delv) saveState('deletedVars', d.delv); if(d.cname) saveState('customNames', d.cname); if(d.cmain) saveState('customMainInfo', d.cmain); if(d.dates) saveState('scheduleDates', d.dates); if(d.inv) saveState('inventory', d.inv); if(d.invSort) saveState('invSort', d.invSort); alert("恢复成功，即将重新加载！"); location.reload(); } catch(err) { alert("解析失败，请检查文件。"); } }; reader.readAsText(file); }
+    function exportData() { localStorage.setItem('mg3-lastbackup', Date.now().toString()); const dataStr = JSON.stringify({ s: state.states, n: state.notes, st: state.stars, cp: state.customPlants, cs: state.customStats, ci: state.customImages, cv: state.customVars, cvi: state.customVarsInfo, delv: state.deletedVars, cname: state.customNames, cmain: state.customMainInfo, dates: state.scheduleDates, inv: state.inventory, invSort: state.invSort, vl: state.varLinks }); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([dataStr], { type: "application/json" })); a.download = `花园图鉴备份_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("已导出，请妥善保存"); closeModal(); }
+    function importData(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(ev) { try { const d = JSON.parse(ev.target.result); if(d.s) saveState('states', d.s); if(d.n) saveState('notes', d.n); if(d.st) saveState('stars', d.st); if(d.cp) saveState('customPlants', d.cp); if(d.cs) saveState('customStats', d.cs); if(d.ci) { for(const [k,v] of Object.entries(d.ci)) { await saveImgDB(k, v); } } if(d.cv) saveState('customVars', d.cv); if(d.cvi) saveState('customVarsInfo', d.cvi); if(d.delv) saveState('deletedVars', d.delv); if(d.cname) saveState('customNames', d.cname); if(d.cmain) saveState('customMainInfo', d.cmain); if(d.dates) saveState('scheduleDates', d.dates); if(d.inv) saveState('inventory', d.inv); if(d.invSort) saveState('invSort', d.invSort); if(d.vl) saveState('varLinks', d.vl); alert("恢复成功，即将重新加载！"); location.reload(); } catch(err) { alert("解析失败，请检查文件。"); } }; reader.readAsText(file); }
 
     // Boot: migrate images to IndexedDB, then load and render
     (async function boot() {
