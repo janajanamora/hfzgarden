@@ -683,9 +683,8 @@
         </div>
         <div onclick="editSize('${g.id}')" class="bg-white border border-[#E6DDEB] rounded-[14px] p-2.5 text-center shadow-sm flex flex-col justify-center overflow-hidden min-w-0 cursor-pointer active:bg-[#F9F7F5]">
           <div class="text-lg opacity-80 mb-1 leading-none">📐</div>
-          <div class="text-[10px] font-bold text-[#8C8491] leading-tight">尺幅</div>
-          <div class="text-[12px] font-bold text-[#5C4B66] truncate leading-tight mt-1">${g.hcm}cm</div>
-          <div class="text-[11px] font-semibold text-[#7C6C87] truncate leading-tight mt-0.5">${g.wcm}cm</div>
+          <div class="text-[12px] font-bold text-[#5C4B66] leading-tight mt-1 break-words">${g.hcm}cm</div>
+          <div class="text-[11px] font-semibold text-[#7C6C87] leading-tight mt-0.5 break-words">${g.wcm}cm</div>
         </div>
         <div onclick="showAttrPicker('${g.id}','cl',['easy','mod','att'],['🟢 放养型','🟡 稍留意','🔴 要照顾'])" class="bg-white border border-[#EFEBF2] rounded-[14px] p-2 text-center shadow-sm flex flex-col justify-center overflow-hidden min-w-0 cursor-pointer active:bg-[#F9F7F5]">
           <div class="text-lg opacity-80 mb-1 leading-none">${clIcon}</div>
@@ -797,10 +796,10 @@
 
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
             <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
-            <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); ensureSheetFieldVisible(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+            <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
             <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
               <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); ensureSheetFieldVisible(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
             </div>
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
@@ -851,7 +850,7 @@
     }
 
     function switchVar(idx) { sheetState.varIdx = idx; sheetState.copied = false; sheetState.saved = false; renderSheet(); scrollActiveTabIntoView(); }
-    function scrollActiveTabIntoView() { setTimeout(function() { const tab = document.getElementById('var-tab-' + sheetState.varIdx); if(tab) tab.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' }); }, 60); }
+    function scrollActiveTabIntoView() { setTimeout(function() { const tab = document.getElementById('var-tab-' + sheetState.varIdx); if(tab) tab.scrollIntoView({ behavior:'auto', block:'nearest', inline:'center' }); }, 60); }
 
     function addCustomVar(groupId) {
       lockBodyScroll();
@@ -980,18 +979,57 @@
     }
     function editSize(groupId) {
       const g = ALL_GROUPS.find(gr=>gr.id===groupId);
-      const nextH = prompt("输入高度范围(cm)，如 20-30", g?.hcm||"");
-      if(nextH === null) return;
-      const nextW = prompt("输入宽度/冠幅(cm)，如 30-50 或 60+蔓延", g?.wcm||"");
-      if(nextW === null) return;
+      if(!g) return;
+      lockBodyScroll();
+      document.getElementById('modal-root').innerHTML = `
+        <div class="fixed left-0 right-0 z-[70] flex flex-col font-sans" style="${getViewportShellStyle()}">
+          <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
+          <div data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp">
+            <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
+              <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">📐 编辑尺幅</h2>
+              <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
+            </div>
+            <div class="p-5 space-y-4" style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));">
+              <div class="rounded-2xl border border-[#E6DDEB] bg-white p-4">
+                <p class="text-[12px] font-bold text-[#8C8491] mb-3">当前显示</p>
+                <div class="space-y-2">
+                  <div>
+                    <p class="text-[11px] text-[#A69EAB] mb-1">高度</p>
+                    <p class="text-[16px] font-bold text-[#5C4B66] break-words">${g.hcm||'未填写'}</p>
+                  </div>
+                  <div>
+                    <p class="text-[11px] text-[#A69EAB] mb-1">宽度 / 冠幅</p>
+                    <p class="text-[16px] font-bold text-[#7C6C87] break-words">${g.wcm||'未填写'}</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-[#8C8491] mb-1">高度(cm)</p>
+                <input id="size_hcm" value="${g.hcm||''}" placeholder="如：20-30" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white focus:outline-none text-[15px] font-bold text-[#5C4B66]" />
+              </div>
+              <div>
+                <p class="text-xs font-bold text-[#8C8491] mb-1">宽度 / 冠幅(cm)</p>
+                <input id="size_wcm" value="${g.wcm||''}" placeholder="如：30-50 或 60+蔓延" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white focus:outline-none text-[15px] font-bold text-[#7C6C87]" />
+              </div>
+              <button onclick="saveSize('${groupId}')" class="w-full py-4 bg-[#5C4B66] text-white rounded-xl font-bold tracking-widest shadow-md">保存</button>
+            </div>
+          </div>
+        </div>
+      `;
+      syncViewportPanels();
+    }
+
+    function saveSize(groupId) {
       if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {};
-      state.customMainInfo[groupId].hcm = nextH.trim();
-      state.customMainInfo[groupId].wcm = nextW.trim();
+      state.customMainInfo[groupId].hcm = document.getElementById('size_hcm').value.trim();
+      state.customMainInfo[groupId].wcm = document.getElementById('size_wcm').value.trim();
       saveState('customMainInfo', state.customMainInfo);
+      closeModal();
       syncData();
       filteredGroups[state.sel] = ALL_GROUPS.find(gr=>gr.id===groupId);
       state.appNeedsRender = true;
       renderSheet();
+      showToast("📐 尺幅已更新");
     }
     function saveCareAndNote(groupId, varId) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].note = ''; saveState('customMainInfo', state.customMainInfo); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 已保存"); }
     function saveNoteUi() { sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 笔记已保存"); }
