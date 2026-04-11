@@ -19,7 +19,10 @@
       --text-muted: #6A6071;
       --accent-gold: #D4AF37;
       --bg-gold-light: #FFFDF5;
+      --vv-top: 0px;
+      --vvh: 100dvh;
     }
+    html, body { min-height: 100%; }
     body { background-color: var(--bg-cream); color: var(--text-main); font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; -webkit-user-select: none; user-select: none; padding-bottom: env(safe-area-inset-bottom); }
     input, textarea, select { font-size: 16px !important; -webkit-appearance: none; }
     .font-serif-elegant { font-family: Georgia, "Times New Roman", "STSong", "SimSun", serif; }
@@ -273,7 +276,53 @@
 
     let ALL_GROUPS = []; let ALL_STATS = []; let filteredGroups = [];
     let sheetState = { varIdx: 0, copied: false, saved: false };
-    let lastScrollY = 0; let tempBloomMonths = new Set();
+    let lastScrollY = 0; let tempBloomMonths = new Set(); let bodyLockDepth = 0;
+
+    function lockBodyScroll() {
+      if (bodyLockDepth === 0) {
+        lastScrollY = window.scrollY;
+        document.body.classList.add('scroll-lock');
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${lastScrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+      }
+      bodyLockDepth += 1;
+    }
+
+    function unlockBodyScroll() {
+      if (bodyLockDepth === 0) return;
+      bodyLockDepth -= 1;
+      if (bodyLockDepth > 0) return;
+      const restoreY = Math.abs(parseInt(document.body.style.top || '0', 10)) || lastScrollY;
+      document.body.classList.remove('scroll-lock');
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      window.scrollTo(0, restoreY);
+    }
+
+    function getViewportShellStyle() {
+      return 'top:var(--vv-top,0px);height:var(--vvh,100dvh);';
+    }
+
+    function syncViewportPanels() {
+      const vv = window.visualViewport;
+      const viewportTop = vv ? vv.offsetTop : 0;
+      const viewportHeight = vv ? vv.height : window.innerHeight;
+      const keyboardOpen = !!(vv && vv.height < window.innerHeight * 0.85);
+
+      document.documentElement.style.setProperty('--vv-top', viewportTop + 'px');
+      document.documentElement.style.setProperty('--vvh', viewportHeight + 'px');
+
+      document.querySelectorAll('[data-bottom-panel]').forEach(function(panel) {
+        const preferredHeight = keyboardOpen ? viewportHeight - 16 : viewportHeight * 0.92;
+        panel.style.maxHeight = Math.max(320, Math.floor(preferredHeight)) + 'px';
+      });
+    }
 
     function syncData() {
       ALL_GROUPS = [...baseP, ...state.customPlants].map(g => {
@@ -743,14 +792,15 @@
         let st = existingContent.scrollTop; existingContent.innerHTML = contentHtml; existingContent.scrollTop = st;
       } else {
         root.innerHTML = `
-          <div class="fixed inset-0 z-50 flex flex-col font-sans">
+          <div class="fixed left-0 right-0 z-50 flex flex-col font-sans" style="${getViewportShellStyle()}">
             <div class="flex-1 bg-black/50 backdrop-blur-sm transition-opacity" onclick="closeSheet()"></div>
-            <div id="sheet-content" class="bg-[var(--bg-cream)] rounded-t-[32px] max-h-[92vh] overflow-y-auto animate-slideUp shadow-2xl relative">
+            <div id="sheet-content" data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp shadow-2xl relative">
               ${contentHtml}
             </div>
           </div>
         `;
       }
+      syncViewportPanels();
     }
 
     function getImgHtml(src, cls) {
@@ -762,13 +812,13 @@
     function clearFilters() { state.zf = 'all'; state.sf = 'all'; state.stf = 'all'; renderApp(); }
     
     function openSheet(idx) {
-      lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
+      lockBodyScroll();
       state.sel = idx; sheetState.varIdx = 0; sheetState.copied = false; sheetState.saved = false; renderSheet(); scrollActiveTabIntoView();
     }
     
     function closeSheet() {
       state.sel = null; document.getElementById('sheet-root').innerHTML = '';
-      document.body.classList.remove('scroll-lock'); window.scrollTo(0, lastScrollY);
+      unlockBodyScroll();
       if(state.appNeedsRender) { renderApp(); window.scrollTo(0, lastScrollY); state.appNeedsRender = false; }
     }
 
@@ -776,11 +826,11 @@
     function scrollActiveTabIntoView() { setTimeout(function() { const tab = document.getElementById('var-tab-' + sheetState.varIdx); if(tab) tab.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' }); }, 60); }
 
     function addCustomVar(groupId) {
-      lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
+      lockBodyScroll();
       document.getElementById('modal-root').innerHTML = `
-        <div class="fixed inset-0 z-[70] flex flex-col font-sans">
+        <div class="fixed left-0 right-0 z-[70] flex flex-col font-sans" style="${getViewportShellStyle()}">
           <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
-          <div class="bg-[var(--bg-cream)] rounded-t-[32px] max-h-[90vh] overflow-y-auto animate-slideUp">
+          <div data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp">
             <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
               <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">🌱 新增品种/颜色</h2>
               <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
@@ -816,12 +866,12 @@
       const g = ALL_GROUPS.find(gr => gr.id === groupId); if(!g) return;
       const cv = g.allVars.find(v => v.id === varId); if(!cv) return;
       
-      lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
+      lockBodyScroll();
       
       document.getElementById('modal-root').innerHTML = `
-        <div class="fixed inset-0 z-[70] flex flex-col font-sans">
+        <div class="fixed left-0 right-0 z-[70] flex flex-col font-sans" style="${getViewportShellStyle()}">
           <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
-          <div class="bg-[var(--bg-cream)] rounded-t-[32px] max-h-[90vh] overflow-y-auto animate-slideUp">
+          <div data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp">
             <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
               <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">✎ 编辑品种/颜色</h2>
               <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
@@ -986,12 +1036,12 @@
     /* ─── 园艺清单弹窗功能 ─── */
     function openInvModal(itemId = null) {
       const item = itemId ? state.inventory.find(i => i.id === itemId) : { name:'', cost:'', priority:'medium', note:'' };
-      lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
+      lockBodyScroll();
       
       document.getElementById('modal-root').innerHTML = `
-        <div class="fixed inset-0 z-[70] flex flex-col font-sans">
+        <div class="fixed left-0 right-0 z-[70] flex flex-col font-sans" style="${getViewportShellStyle()}">
           <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
-          <div class="bg-[var(--bg-cream)] rounded-t-[32px] max-h-[90vh] overflow-y-auto animate-slideUp">
+          <div data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp">
             <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
               <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">${itemId ? '✎ 编辑' : '✨ 添加'}清单物品</h2>
               <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
@@ -1044,9 +1094,9 @@
       let monthsHtml = MON.map((m, i) => `<div id="epm_${i+1}" onclick="toggleEditPlantMonth(${i+1})" class="py-1.5 text-center rounded text-[11px] font-bold cursor-pointer select-none border ${tempBloomMonths.has(i+1)?'border-[#8C749E] bg-[#EFEBF2] text-[#5C4B66]':'border-[#EFEBF2] bg-white text-[#8C8491]'}">${i+1}月</div>`).join('');
       
       document.getElementById('modal-root').innerHTML = `
-        <div class="fixed inset-0 z-[70] flex flex-col font-sans">
+        <div class="fixed left-0 right-0 z-[70] flex flex-col font-sans" style="${getViewportShellStyle()}">
           <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
-          <div class="bg-[var(--bg-cream)] rounded-t-[32px] max-h-[90vh] overflow-y-auto animate-slideUp">
+          <div data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp">
             <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
               <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">✎ 编辑植物属性</h2>
               <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
@@ -1156,13 +1206,13 @@
     
     function openAddPlantModal() {
       tempAddBase64 = ""; tempBloomMonths = new Set(); tempMatchedPlant = null;
-      lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
+      lockBodyScroll();
       let monthsHtml = MON.map((m, i) => `<div id="epm_${i+1}" onclick="toggleEditPlantMonth(${i+1})" class="py-2 text-center rounded-lg border border-[#EFEBF2] bg-white text-[12px] font-bold text-[#8C8491] cursor-pointer select-none">${i+1}月</div>`).join('');
 
       document.getElementById('modal-root').innerHTML = `
-        <div class="fixed inset-0 z-[60] flex flex-col font-sans">
+        <div class="fixed left-0 right-0 z-[60] flex flex-col font-sans" style="${getViewportShellStyle()}">
           <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
-          <div class="bg-[var(--bg-cream)] rounded-t-[32px] max-h-[90vh] overflow-y-auto animate-slideUp">
+          <div data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp">
             <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
               <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">🌱 添加新植物</h2>
               <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
@@ -1195,7 +1245,7 @@
       `;
     }
 
-    function closeModal() { document.getElementById('modal-root').innerHTML = ''; document.body.classList.remove('scroll-lock'); window.scrollTo(0, lastScrollY); }
+    function closeModal() { document.getElementById('modal-root').innerHTML = ''; unlockBodyScroll(); }
 
     async function saveNewPlant() {
       const n = document.getElementById('ap_n').value.trim(); if(!n) return alert("请填写名称");
@@ -1232,9 +1282,9 @@
 
     /* ─── 备份与导入 ─── */
     function openBackupModal() {
-      lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
+      lockBodyScroll();
       document.getElementById('modal-root').innerHTML = `
-        <div class="fixed inset-0 z-[60] flex flex-col items-center justify-center font-sans px-6">
+        <div class="fixed left-0 right-0 z-[60] flex flex-col items-center justify-center font-sans px-6" style="${getViewportShellStyle()}">
           <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
           <div class="bg-[var(--bg-cream)] rounded-[28px] w-full max-w-sm p-6 relative z-10 animate-slideUp shadow-2xl border border-[#EFEBF2]">
             <h3 class="text-xl font-bold text-[#5C4B66] font-serif-elegant mb-5 text-center">⚙️ 数据管家</h3>
@@ -1259,19 +1309,12 @@
       state.customImages = await loadAllImgs();
       renderApp();
 
-      // iOS keyboard compensation: shrink sheet when keyboard opens
+      syncViewportPanels();
       if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', function() {
-          const sheet = document.getElementById('sheet-content');
-          if (!sheet) return;
-          const vvh = window.visualViewport.height;
-          const wih = window.innerHeight;
-          if (vvh < wih * 0.85) {
-            sheet.style.maxHeight = (vvh * 0.9) + 'px';
-          } else {
-            sheet.style.maxHeight = '';
-          }
-        });
+        window.visualViewport.addEventListener('resize', syncViewportPanels);
+        window.visualViewport.addEventListener('scroll', syncViewportPanels);
+      } else {
+        window.addEventListener('resize', syncViewportPanels);
       }
 
       // Version announcement
