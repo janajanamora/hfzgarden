@@ -21,10 +21,11 @@
       --bg-gold-light: #FFFDF5;
       --vv-top: 0px;
       --vvh: 100dvh;
+      --kb-offset: 0px;
     }
     html, body { min-height: 100%; }
     body { background-color: var(--bg-cream); color: var(--text-main); font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; -webkit-user-select: none; user-select: none; padding-bottom: env(safe-area-inset-bottom); }
-    input, textarea, select { font-size: 16px !important; -webkit-appearance: none; }
+    input, textarea, select { font-size: 16px !important; -webkit-appearance: none; scroll-margin-bottom: calc(var(--kb-offset, 0px) + 24px); }
     .font-serif-elegant { font-family: Georgia, "Times New Roman", "STSong", "SimSun", serif; }
     
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -314,9 +315,11 @@
       const viewportTop = vv ? vv.offsetTop : 0;
       const viewportHeight = vv ? vv.height : window.innerHeight;
       const keyboardOpen = !!(vv && vv.height < window.innerHeight * 0.85);
+      const keyboardInset = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
 
       document.documentElement.style.setProperty('--vv-top', viewportTop + 'px');
       document.documentElement.style.setProperty('--vvh', viewportHeight + 'px');
+      document.documentElement.style.setProperty('--kb-offset', keyboardOpen ? keyboardInset + 'px' : '0px');
 
       document.querySelectorAll('[data-bottom-panel]').forEach(function(panel) {
         const preferredHeight = keyboardOpen ? viewportHeight - 16 : viewportHeight * 0.92;
@@ -337,6 +340,15 @@
     function autoResizeSheetTextareas() {
       autoResizeTextarea(document.getElementById('care_ta_' + filteredGroups[state.sel]?.id));
       autoResizeTextarea(document.getElementById('seed_ta_' + filteredGroups[state.sel]?.id));
+    }
+
+    function ensureSheetFieldVisible(el) {
+      if (!el) return;
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        });
+      });
     }
 
     function syncData() {
@@ -669,9 +681,11 @@
           <div class="text-lg opacity-80 mb-1 leading-none">${waIcon}</div>
           <div class="text-[10px] font-bold text-[#8C8491] truncate leading-tight">${W_MAP[g.wa]?.split(' ')[1]||'未知'}</div>
         </div>
-        <div onclick="editSize('${g.id}')" class="bg-white border border-[#EFEBF2] rounded-[14px] p-2 text-center shadow-sm flex flex-col justify-center overflow-hidden min-w-0 cursor-pointer active:bg-[#F9F7F5]">
+        <div onclick="editSize('${g.id}')" class="bg-white border border-[#E6DDEB] rounded-[14px] p-2.5 text-center shadow-sm flex flex-col justify-center overflow-hidden min-w-0 cursor-pointer active:bg-[#F9F7F5]">
           <div class="text-lg opacity-80 mb-1 leading-none">📐</div>
-          <div class="text-[10px] font-bold text-[#8C8491] truncate leading-tight">${g.hcm}cm</div>
+          <div class="text-[10px] font-bold text-[#8C8491] leading-tight">尺幅</div>
+          <div class="text-[12px] font-bold text-[#5C4B66] truncate leading-tight mt-1">${g.hcm}cm</div>
+          <div class="text-[11px] font-semibold text-[#7C6C87] truncate leading-tight mt-0.5">${g.wcm}cm</div>
         </div>
         <div onclick="showAttrPicker('${g.id}','cl',['easy','mod','att'],['🟢 放养型','🟡 稍留意','🔴 要照顾'])" class="bg-white border border-[#EFEBF2] rounded-[14px] p-2 text-center shadow-sm flex flex-col justify-center overflow-hidden min-w-0 cursor-pointer active:bg-[#F9F7F5]">
           <div class="text-lg opacity-80 mb-1 leading-none">${clIcon}</div>
@@ -706,7 +720,7 @@
           <button onclick="closeSheet()" class="w-8 h-8 rounded-full bg-[#EFEBF2] flex items-center justify-center text-[#8C8491] font-bold active:bg-[#DFD8E3]">✕</button>
         </div>
 
-        <div class="px-5 pb-12 pt-4 space-y-5" style="padding-bottom: calc(3rem + env(safe-area-inset-bottom));">
+        <div class="px-5 pb-12 pt-4 space-y-5" style="padding-bottom: calc(3rem + env(safe-area-inset-bottom) + var(--kb-offset, 0px));">
           <div class="relative w-full aspect-square bg-white rounded-[20px] overflow-hidden border border-[#EFEBF2] shadow-sm">
             ${getImgHtml(displayImg, "w-full h-full object-cover object-center")}
             <label class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md rounded-xl flex items-center gap-1.5 px-3 py-2 shadow-md cursor-pointer border border-white/60 active:scale-95 transition-transform">
@@ -752,7 +766,6 @@
                 ${MON.map((m, i) => `<div class="flex-1 text-center text-[#5C4B66] font-bold" style="font-size:10px; line-height:20px">${i+1}月</div>`).join('')}
               </div>
             </div>
-            <div class="text-center text-[10px] text-[#C4B7CB] mt-1 italic w-full overflow-hidden text-ellipsis whitespace-nowrap px-1">尺幅参考：高度 ${g.hcm}cm · 宽/冠幅 ${g.wcm}cm</div>
           </div>
 
           <div class="flex gap-1.5">${statusBtnHtml}${ALL_STATS.length>5 ? moreStatHtml : ''}</div>
@@ -784,10 +797,10 @@
 
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
             <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
-            <textarea oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+            <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); ensureSheetFieldVisible(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
             <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
               <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-              <textarea oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); ensureSheetFieldVisible(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
             </div>
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
@@ -965,7 +978,21 @@
       state.customMainInfo[groupId][attr] = val; saveState('customMainInfo', state.customMainInfo);
       syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr=>gr.id===groupId); state.appNeedsRender = true; renderSheet();
     }
-    function editSize(groupId) { const g = ALL_GROUPS.find(gr=>gr.id===groupId); const val = prompt("输入高度范围(cm)，如 20-30", g?.hcm||""); if(val !== null) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].hcm = val.trim(); saveState('customMainInfo', state.customMainInfo); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr=>gr.id===groupId); state.appNeedsRender = true; renderSheet(); } }
+    function editSize(groupId) {
+      const g = ALL_GROUPS.find(gr=>gr.id===groupId);
+      const nextH = prompt("输入高度范围(cm)，如 20-30", g?.hcm||"");
+      if(nextH === null) return;
+      const nextW = prompt("输入宽度/冠幅(cm)，如 30-50 或 60+蔓延", g?.wcm||"");
+      if(nextW === null) return;
+      if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {};
+      state.customMainInfo[groupId].hcm = nextH.trim();
+      state.customMainInfo[groupId].wcm = nextW.trim();
+      saveState('customMainInfo', state.customMainInfo);
+      syncData();
+      filteredGroups[state.sel] = ALL_GROUPS.find(gr=>gr.id===groupId);
+      state.appNeedsRender = true;
+      renderSheet();
+    }
     function saveCareAndNote(groupId, varId) { if(!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {}; state.customMainInfo[groupId].note = ''; saveState('customMainInfo', state.customMainInfo); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 已保存"); }
     function saveNoteUi() { sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 笔记已保存"); }
 
@@ -1331,6 +1358,14 @@
       } else {
         window.addEventListener('resize', syncViewportPanels);
       }
+
+      document.addEventListener('focusin', function(e) {
+        const sheet = document.getElementById('sheet-content');
+        if (!sheet || !sheet.contains(e.target)) return;
+        if (e.target.matches('textarea, input, select')) {
+          ensureSheetFieldVisible(e.target);
+        }
+      });
 
       // Version announcement
       const lastVersion = localStorage.getItem('mg3-version');
