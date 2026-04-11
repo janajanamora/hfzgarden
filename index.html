@@ -702,20 +702,25 @@
             <span class="text-base">${isStar ? '★' : '☆'}</span> <span>${isStar ? '此品种已置顶' : '置顶此品种'}</span>
           </button>
 
-          <div class="rounded-2xl p-4 border shadow-sm bg-white border-[#EFEBF2] space-y-2">
-            <div class="flex justify-between items-center">
-              <p class="text-[13px] font-bold text-[#536F8A] flex items-center gap-1.5"><span class="text-base">📎</span> 参考链接</p>
-              <button onclick="openAddLinkModal('${cv.id}')" class="text-[12px] text-[#536F8A] font-bold px-2.5 py-1 rounded-lg bg-[#E8EFF5] active:bg-[#D5E2EE] transition-colors">+ 添加</button>
-            </div>
-            ${(state.varLinks[cv.id] && state.varLinks[cv.id].length > 0) ? state.varLinks[cv.id].map((lk, li) => `
-              <div class="flex items-center gap-2 py-2 border-t border-[#F2EFF4]">
-                <a href="${lk.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 active:opacity-60">
-                  <p class="text-[13px] font-bold text-[#2D2630] truncate">${lk.title || '未命名链接'}</p>
-                  <p class="text-[11px] text-[#B8B0BD] truncate">${lk.url}</p>
-                </a>
-                <button onclick="removeVarLink('${cv.id}', ${li})" class="text-[#C4B7CB] text-[14px] px-2 flex-shrink-0 active:text-red-400">✕</button>
+          <div class="rounded-2xl border shadow-sm bg-white border-[#EFEBF2] overflow-hidden">
+            <div onclick="toggleLinksPanel('${cv.id}')" class="flex justify-between items-center px-4 py-3 cursor-pointer active:bg-[#F9F7F5] transition-colors">
+              <p class="text-[13px] font-bold text-[#536F8A] flex items-center gap-1.5"><span class="text-base">📎</span> 参考链接${(state.varLinks[cv.id]?.length) ? ' <span class="text-[11px] font-normal text-[#A69EAB]">(' + state.varLinks[cv.id].length + ')</span>' : ''}</p>
+              <div class="flex items-center gap-2">
+                <button onclick="event.stopPropagation(); openAddLinkModal('${cv.id}')" class="text-[12px] text-[#536F8A] font-bold px-2.5 py-1 rounded-lg bg-[#E8EFF5] active:bg-[#D5E2EE] transition-colors">+ 添加</button>
+                <span id="links-arrow-${cv.id}" class="text-[12px] text-[#B8B0BD] transition-transform" style="${linksExpanded[cv.id] ? 'transform:rotate(180deg)' : ''}">▼</span>
               </div>
-            `).join('') : '<p class="text-[12px] text-[#C4B7CB] py-1">收藏有用的文章、视频、对话链接…</p>'}
+            </div>
+            <div id="links-body-${cv.id}" class="${linksExpanded[cv.id] ? '' : 'hidden'} px-4 pb-3">
+              ${(state.varLinks[cv.id] && state.varLinks[cv.id].length > 0) ? state.varLinks[cv.id].map((lk, li) => `
+                <div class="flex items-center gap-2 py-2 border-t border-[#F2EFF4]">
+                  <a href="${lk.url}" target="_blank" rel="noopener" class="flex-1 min-w-0 active:opacity-60">
+                    <p class="text-[13px] font-bold text-[#2D2630] truncate">${lk.title || '未命名链接'}</p>
+                    <p class="text-[11px] text-[#B8B0BD] truncate">${lk.url}</p>
+                  </a>
+                  <button onclick="removeVarLink('${cv.id}', ${li})" class="text-[#C4B7CB] text-[14px] px-2 flex-shrink-0 active:text-red-400">✕</button>
+                </div>
+              `).join('') : '<p class="text-[12px] text-[#C4B7CB] py-1">收藏有用的文章、视频、对话链接…</p>'}
+            </div>
           </div>
 
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
@@ -906,6 +911,16 @@
     function saveNoteUi() { sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 笔记已保存"); }
 
     /* ─── 品种链接收藏 ─── */
+    let linksExpanded = {};
+    function toggleLinksPanel(varId) {
+      const body = document.getElementById('links-body-' + varId);
+      const arrow = document.getElementById('links-arrow-' + varId);
+      if(!body) return;
+      const isHidden = body.classList.contains('hidden');
+      body.classList.toggle('hidden');
+      if(arrow) arrow.style.transform = isHidden ? 'rotate(180deg)' : '';
+      linksExpanded[varId] = isHidden;
+    }
     function openAddLinkModal(varId) {
       const picker = document.createElement('div'); picker.id = 'link-modal';
       picker.innerHTML = `
@@ -931,6 +946,7 @@
       state.varLinks[varId].push({ url, title });
       saveState('varLinks', state.varLinks);
       document.getElementById('link-modal')?.remove();
+      linksExpanded[varId] = true;
       renderSheet(); showToast("📎 链接已收藏");
     }
     function removeVarLink(varId, idx) {
@@ -938,6 +954,7 @@
       state.varLinks[varId].splice(idx, 1);
       if(state.varLinks[varId].length === 0) delete state.varLinks[varId];
       saveState('varLinks', state.varLinks);
+      linksExpanded[varId] = true;
       renderSheet(); showToast("已移除");
     }
     function toggleCalCat(cat) { if (state.calCats.includes(cat)) { if(state.calCats.length>1) state.calCats = state.calCats.filter(c=>c!==cat); } else state.calCats.push(cat); renderApp(); }
