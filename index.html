@@ -66,16 +66,14 @@
 
   <script>
     /* ─── 版本与更新公告 ─── */
-    const APP_VERSION = "2.1";
+    const APP_VERSION = "2.2";
     const APP_CHANGELOG = [
-      "🛠️ 养护笔记保存修复 — 现在直接编辑就能正常保存了",
-      "🌰 种子提示可以编辑了 — 在养护笔记下方单独填写",
-      "📅 花历月份显示优化 — 手机上不再挤成两排",
-      "🔍 季节筛选自动联动 — 改了观赏期，筛选跟着更新",
-      "🌏 优化了谷歌搜索 — 会出现更多ai养护指南以及中文结果啦 ",
-      "📋 清单按钮更直观 — 未购/已买 一眼看出",
-      "☁️ 全阴图标换成了小云朵",
-      "📢 以后每次更新都会有这个小提示啦"
+      "🔍 植物智能匹配 — 添加新植物时，自动匹配81种常见园艺植物的属性",
+      "🥬 新增分类 — 果蔬、香草类别，花历筛选同步更新",
+      "🌱 养护笔记标注「所有品种通用」— 修改一个品种的养护笔记会同步到同类所有品种",
+      "📝 品种备注更直观 — 每个品种下方增加可点击的备注卡片，点击即可编辑",
+      "🔄 切换品种不再跳页 — 品种标签自动滚动到当前选中项",
+      "✎ 编辑属性按钮更显眼 — 不容易被忽略了"
     ];
 
     /* ─── 数据字典 ─── */
@@ -90,6 +88,8 @@
     };
 
     const CAT = { 
+      veggie: { l:"果蔬", bg:"#EAF0EC", fg:"#4B7059", dot:"#6B9478" },
+      herb: { l:"香草", bg:"#F2EDE6", fg:"#70624D", dot:"#91836E" },
       flower: { l:"花卉", bg:"#EFEBF2", fg:"#6A527A", dot:"#8C749E" }, 
       foliage: { l:"观叶", bg:"#EAEBE6", fg:"#56614B", dot:"#788A68" }, 
       ground: { l:"地被", bg:"#F2EDE6", fg:"#70624D", dot:"#91836E" }, 
@@ -151,6 +151,97 @@
       { id:"phlox", n:"福禄考·白色", e:"Phlox subulata 'White Delight'", cat:"ground", z:"full_sun", ss:["spring","evergreen"], tp:"", temp:"-30~30℃", wa:"low", cl:"easy", view:"观赏期 全年（花期4-5月）", hcm:"5-15", wcm:"45-60蔓延", mo:[0,0,1,1,1,1,1,1,1,1,0,0], care:"常绿针叶形叶片，极耐旱。花后轻轻修剪一下保持紧凑形状就好。排水好的普通土。\n\n📌 实用备忘：5月花后修剪一次，保持密实不散开。不用施肥。老株中心如果秃了，可以分株重新种。", note:"春天白花铺地，和铺地百里香可以做季节轮换——春天看福禄考开花，夏天看百里香开花。", seed:"可以种子种，但建立非常慢。买小苗种下去更实际。", vars:[ { id:"phlox_0", n:"White Delight", e:"Phlox subulata", img:I.ph, d:"", ds:"recommended", star:false } ] }
     ];
 
+    /* ─── 植物匹配数据库 (Zone 8a 温哥华常见 81种) ─── */
+    const PLANT_DB = [
+      // 🥬 果蔬 18种
+      {n:"番茄",e:"Tomato (Solanum lycopersicum)",cat:"veggie",z:"full_sun",wa:"mod",cl:"mod",hcm:"60-180",wcm:"40-60",mo:[0,0,0,0,0,0,1,1,1,1,0,0],tip:"最后霜冻后定植，支架必备，定期掐侧芽促果"},
+      {n:"辣椒",e:"Pepper (Capsicum annuum)",cat:"veggie",z:"full_sun",wa:"mod",cl:"mod",hcm:"40-70",wcm:"30-50",mo:[0,0,0,0,0,0,1,1,1,1,0,0],tip:"喜热，最后霜冻后再种，盆栽也很好"},
+      {n:"黄瓜",e:"Cucumber (Cucumis sativus)",cat:"veggie",z:"full_sun",wa:"high",cl:"mod",hcm:"30-180",wcm:"40-60",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"搭架子让它爬，保持土壤湿润，果实要及时采"},
+      {n:"西葫芦",e:"Zucchini (Cucurbita pepo)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"60-90",wcm:"90-120",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"超高产，两株够一家吃，注意白粉病"},
+      {n:"茄子",e:"Eggplant (Solanum melongena)",cat:"veggie",z:"full_sun",wa:"mod",cl:"att",hcm:"60-90",wcm:"40-60",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"喜热，选矮品种盆栽+黑色地膜保温"},
+      {n:"豌豆",e:"Pea (Pisum sativum)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"60-180",wcm:"20-30",mo:[0,0,0,0,0,1,1,1,0,0,0,0],tip:"早春直播，喜凉怕热，温哥华春天特别适合"},
+      {n:"四季豆",e:"Bush Bean (Phaseolus vulgaris)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"40-60",wcm:"20-30",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"最后霜冻后直播，矮生品种不需要搭架"},
+      {n:"毛豆",e:"Edamame (Glycine max)",cat:"veggie",z:"full_sun",wa:"mod",cl:"mod",hcm:"50-70",wcm:"30-40",mo:[0,0,0,0,0,0,0,1,1,0,0,0],tip:"选早熟品种，整株变黄时拔起采收"},
+      {n:"生菜",e:"Lettuce (Lactuca sativa)",cat:"veggie",z:"part_sun",wa:"mod",cl:"easy",hcm:"15-30",wcm:"20-30",mo:[0,0,0,1,1,1,1,1,1,1,0,0],tip:"春秋都能种，夏天太热会抽薹发苦"},
+      {n:"菠菜",e:"Spinach (Spinacia oleracea)",cat:"veggie",z:"part_sun",wa:"mod",cl:"easy",hcm:"15-30",wcm:"15-20",mo:[0,0,1,1,1,1,0,0,0,1,1,0],tip:"喜凉，温哥华春秋最好，热了就抽薹"},
+      {n:"小白菜",e:"Bok Choy (Brassica rapa chinensis)",cat:"veggie",z:"part_sun",wa:"mod",cl:"easy",hcm:"15-30",wcm:"15-25",mo:[0,0,0,1,1,1,1,1,1,1,1,0],tip:"生长快30天可收，罩防虫网防菜青虫"},
+      {n:"萝卜",e:"Radish (Raphanus sativus)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"15-20",wcm:"10-15",mo:[0,0,0,1,1,1,1,1,1,1,0,0],tip:"最快蔬菜25天可收，间苗很重要"},
+      {n:"胡萝卜",e:"Carrot (Daucus carota subsp. sativus)",cat:"veggie",z:"full_sun",wa:"mod",cl:"mod",hcm:"20-30",wcm:"5-10",mo:[0,0,0,0,0,0,1,1,1,1,0,0],tip:"需要松软深土，发芽慢要耐心，间苗很重要"},
+      {n:"韭菜",e:"Chinese Chives (Allium tuberosum)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-40",wcm:"20-30",mo:[0,0,0,1,1,1,1,1,1,1,0,0],tip:"多年生割了又长，懒人蔬菜之王"},
+      {n:"葱",e:"Green Onion (Allium fistulosum)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-50",wcm:"10-15",mo:[0,0,1,1,1,1,1,1,1,1,1,0],tip:"买来的葱根泡水就能再生，最省钱蔬菜"},
+      {n:"大蒜",e:"Garlic (Allium sativum)",cat:"veggie",z:"full_sun",wa:"low",cl:"easy",hcm:"40-60",wcm:"10-15",mo:[0,0,0,0,0,0,1,0,0,0,0,0],tip:"秋天种夏天收，超省心的过冬蔬菜"},
+      {n:"南瓜",e:"Pumpkin (Cucurbita maxima)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-60",wcm:"200-400",mo:[0,0,0,0,0,0,0,1,1,1,0,0],tip:"需大空间，授粉期可早晨人工辅助"},
+      {n:"草莓",e:"Strawberry (Fragaria × ananassa)",cat:"veggie",z:"full_sun",wa:"mod",cl:"easy",hcm:"15-25",wcm:"30-45",mo:[0,0,0,0,1,1,1,1,1,0,0,0],tip:"多年生，铺稻草防烂果，及时摘匍匐茎"},
+      // 🌿 香草 11种
+      {n:"罗勒",e:"Basil (Ocimum basilicum)",cat:"herb",z:"full_sun",wa:"mod",cl:"mod",hcm:"30-60",wcm:"20-30",mo:[0,0,0,0,0,1,1,1,1,0,0,0],tip:"怕冷最后霜冻后再种，勤掐花芽延长采收"},
+      {n:"迷迭香",e:"Rosemary (Salvia rosmarinus)",cat:"herb",z:"full_sun",wa:"low",cl:"mod",hcm:"60-120",wcm:"60-90",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"排水一定要好，温哥华冬天怕湿不怕冷"},
+      {n:"薄荷",e:"Mint (Mentha)",cat:"herb",z:"part_sun",wa:"high",cl:"easy",hcm:"30-60",wcm:"60+",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"必须盆栽！地栽会疯狂蔓延侵占花园"},
+      {n:"香菜",e:"Cilantro (Coriandrum sativum)",cat:"herb",z:"part_sun",wa:"mod",cl:"easy",hcm:"30-50",wcm:"15-20",mo:[0,0,0,1,1,1,0,0,0,1,0,0],tip:"怕热易抽薹，春秋种最好，每两周接力播"},
+      {n:"欧芹",e:"Parsley (Petroselinum crispum)",cat:"herb",z:"part_sun",wa:"mod",cl:"easy",hcm:"25-40",wcm:"20-30",mo:[0,0,0,1,1,1,1,1,1,1,1,0],tip:"二年生，第一年采叶第二年开花结籽"},
+      {n:"莳萝",e:"Dill (Anethum graveolens)",cat:"herb",z:"full_sun",wa:"mod",cl:"easy",hcm:"60-90",wcm:"20-30",mo:[0,0,0,0,0,1,1,1,1,0,0,0],tip:"直播别移栽根系脆弱，能吸引有益昆虫"},
+      {n:"细香葱",e:"Chives (Allium schoenoprasum)",cat:"herb",z:"full_sun",wa:"mod",cl:"easy",hcm:"25-35",wcm:"20-30",mo:[0,0,0,1,1,1,1,1,1,1,0,0],tip:"多年生超省心，紫色球花也能吃"},
+      {n:"牛至",e:"Oregano (Origanum vulgare)",cat:"herb",z:"full_sun",wa:"low",cl:"easy",hcm:"30-50",wcm:"30-45",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"多年生耐旱耐贫瘠，干燥后风味更浓"},
+      {n:"紫苏",e:"Shiso (Perilla frutescens)",cat:"herb",z:"part_sun",wa:"mod",cl:"easy",hcm:"40-70",wcm:"30-40",mo:[0,0,0,0,0,1,1,1,1,1,0,0],tip:"一年生会自播来年冒新苗，华人厨房必备"},
+      {n:"柠檬香蜂草",e:"Lemon Balm (Melissa officinalis)",cat:"herb",z:"part_sun",wa:"mod",cl:"easy",hcm:"40-60",wcm:"30-45",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"多年生蔓延力强建议盆栽，泡茶很香"},
+      {n:"烹饪百里香",e:"Cooking Thyme (Thymus vulgaris)",cat:"herb",z:"full_sun",wa:"low",cl:"easy",hcm:"20-30",wcm:"20-30",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"直立型做菜用，和铺地百里香是不同品种"},
+      // 🌸 多年生花卉 22种
+      {n:"绣球花",e:"Hydrangea (Hydrangea macrophylla)",cat:"flower",z:"part_sun",wa:"high",cl:"mod",hcm:"100-180",wcm:"100-180",mo:[0,0,0,0,0,1,1,1,1,1,0,0],tip:"酸土蓝花碱土粉花，温哥华偏酸易出蓝色"},
+      {n:"铁线莲",e:"Clematis (Clematis)",cat:"vine",z:"full_sun",wa:"mod",cl:"mod",hcm:"200-400",wcm:"60-100",mo:[0,0,0,0,1,1,1,1,1,0,0,0],tip:"头顶晒太阳脚底要阴凉，根部加覆盖物"},
+      {n:"月季",e:"Rose (Rosa)",cat:"flower",z:"full_sun",wa:"mod",cl:"att",hcm:"60-180",wcm:"60-120",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"春天修剪是关键，注意黑斑病和蚜虫"},
+      {n:"牡丹",e:"Tree Peony (Paeonia suffruticosa)",cat:"shrub",z:"part_sun",wa:"mod",cl:"mod",hcm:"100-150",wcm:"100-120",mo:[0,0,0,0,1,1,0,0,0,0,0,0],tip:"木本不剪枝，秋天种，建立后极耐寒"},
+      {n:"大丽花",e:"Dahlia (Dahlia)",cat:"flower",z:"full_sun",wa:"mod",cl:"att",hcm:"30-150",wcm:"30-60",mo:[0,0,0,0,0,0,1,1,1,1,0,0],tip:"球根秋天挖出室内过冬，或当一年生种"},
+      {n:"薰衣草",e:"Lavender (Lavandula angustifolia)",cat:"flower",z:"full_sun",wa:"low",cl:"mod",hcm:"30-60",wcm:"30-60",mo:[0,0,0,0,0,1,1,1,0,0,0,0],tip:"排水要好，花后修剪保持紧凑，别剪到老木"},
+      {n:"萱草",e:"Daylily (Hemerocallis)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-90",wcm:"45-60",mo:[0,0,0,0,0,1,1,1,1,0,0,0],tip:"超皮实什么都不管也能活，每朵花只开一天"},
+      {n:"鸢尾",e:"Iris (Iris germanica)",cat:"flower",z:"full_sun",wa:"low",cl:"easy",hcm:"60-90",wcm:"30-45",mo:[0,0,0,0,1,1,0,0,0,0,0,0],tip:"根茎要露出土面晒太阳，不能埋太深"},
+      {n:"石竹",e:"Dianthus (Dianthus)",cat:"flower",z:"full_sun",wa:"low",cl:"easy",hcm:"15-30",wcm:"20-30",mo:[0,0,0,0,1,1,1,1,1,0,0,0],tip:"排水好的碱性土最佳，花后修剪促复花"},
+      {n:"飞燕草",e:"Delphinium (Delphinium)",cat:"flower",z:"full_sun",wa:"mod",cl:"att",hcm:"90-180",wcm:"30-45",mo:[0,0,0,0,0,1,1,1,0,0,0,0],tip:"高个子需立支撑，花后剪到基部可再开"},
+      {n:"毛地黄",e:"Foxglove (Digitalis purpurea)",cat:"flower",z:"part_sun",wa:"mod",cl:"easy",hcm:"90-150",wcm:"30-45",mo:[0,0,0,0,0,1,1,0,0,0,0,0],tip:"二年生会自播，全株有毒戴手套修剪"},
+      {n:"黑心菊",e:"Black-eyed Susan (Rudbeckia fulgida)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"60-90",wcm:"30-45",mo:[0,0,0,0,0,0,1,1,1,1,0,0],tip:"超皮实耐旱耐热，秋天花园的救星"},
+      {n:"风铃草",e:"Bellflower (Campanula)",cat:"flower",z:"part_sun",wa:"mod",cl:"easy",hcm:"30-90",wcm:"30-45",mo:[0,0,0,0,0,1,1,1,0,0,0,0],tip:"品种多矮的铺地高的做中景，剪残花促复花"},
+      {n:"蜀葵",e:"Hollyhock (Alcea rosea)",cat:"flower",z:"full_sun",wa:"mod",cl:"mod",hcm:"150-250",wcm:"30-45",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"靠墙种最好做支撑，注意锈病（叶背橙斑）"},
+      {n:"耧斗菜",e:"Columbine (Aquilegia)",cat:"flower",z:"part_sun",wa:"mod",cl:"easy",hcm:"30-60",wcm:"20-30",mo:[0,0,0,0,1,1,0,0,0,0,0,0],tip:"会自播，蜂鸟最爱，和温哥华原生种有亲缘"},
+      {n:"银莲花",e:"Anemone (Anemone × hybrida)",cat:"flower",z:"part_sun",wa:"mod",cl:"mod",hcm:"60-120",wcm:"45-60",mo:[0,0,0,0,0,0,0,1,1,1,0,0],tip:"秋天开花填补花园空窗期，会慢慢蔓延"},
+      {n:"标准玉簪",e:"Hosta (Hosta)",cat:"foliage",z:"shade",wa:"high",cl:"easy",hcm:"40-60",wcm:"60-90",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"阴地之王，防蛞蝓是最大挑战，选厚叶品种"},
+      {n:"美人蕉",e:"Canna Lily (Canna × generalis)",cat:"flower",z:"full_sun",wa:"high",cl:"mod",hcm:"90-180",wcm:"40-60",mo:[0,0,0,0,0,0,1,1,1,1,0,0],tip:"球根秋天要挖起室内过冬，热带风情"},
+      {n:"荷包牡丹",e:"Bleeding Heart (Lamprocapnos spectabilis)",cat:"flower",z:"shade",wa:"mod",cl:"easy",hcm:"60-90",wcm:"45-60",mo:[0,0,0,1,1,1,0,0,0,0,0,0],tip:"春天开花夏天休眠消失是正常的别以为死了"},
+      {n:"芍药",e:"Herbaceous Peony (Paeonia lactiflora)",cat:"flower",z:"full_sun",wa:"mod",cl:"mod",hcm:"60-90",wcm:"60-90",mo:[0,0,0,0,1,1,0,0,0,0,0,0],tip:"秋天种，芽眼入土不超5cm，可活几十年"},
+      {n:"假龙头花",e:"Obedient Plant (Physostegia virginiana)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"60-120",wcm:"60-90",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"花能掰到任意角度保持不动，蔓延力强需控制"},
+      {n:"紫菀",e:"Aster (Symphyotrichum novi-belgii)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-90",wcm:"30-45",mo:[0,0,0,0,0,0,0,1,1,1,0,0],tip:"秋天开花主力，蝴蝶最爱，春天掐顶更紧凑"},
+      // 🌼 一年生花卉 15种
+      {n:"矮牵牛",e:"Petunia (Petunia × hybrida)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"15-30",wcm:"30-60",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"吊盆之王，勤摘残花一直开到霜冻"},
+      {n:"三色堇",e:"Pansy (Viola × wittrockiana)",cat:"flower",z:"part_sun",wa:"mod",cl:"easy",hcm:"15-20",wcm:"20-25",mo:[0,0,1,1,1,1,0,0,0,1,1,0],tip:"耐寒不耐热，温哥华春秋种最好"},
+      {n:"万寿菊",e:"Marigold (Tagetes)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"20-60",wcm:"20-40",mo:[0,0,0,0,0,1,1,1,1,1,0,0],tip:"能驱虫害，种在菜地边上一举两得"},
+      {n:"凤仙花",e:"Impatiens (Impatiens walleriana)",cat:"flower",z:"shade",wa:"high",cl:"easy",hcm:"20-40",wcm:"20-30",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"全阴也能开花的救星，霜冻前搬室内"},
+      {n:"天竺葵",e:"Pelargonium (Pelargonium)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-50",wcm:"30-45",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"盆栽之王，摘残花+偶尔施肥就一直开"},
+      {n:"向日葵",e:"Sunflower (Helianthus annuus)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"60-300",wcm:"30-60",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"直播最好别移栽，矮品种盆栽也行"},
+      {n:"百日草",e:"Zinnia (Zinnia elegans)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-90",wcm:"20-30",mo:[0,0,0,0,0,0,1,1,1,1,0,0],tip:"切花好手越剪越开，注意叶片白粉病"},
+      {n:"金鱼草",e:"Snapdragon (Antirrhinum majus)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"20-90",wcm:"20-30",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"温哥华可当二年生，秋天种春天更早开"},
+      {n:"香雪球",e:"Sweet Alyssum (Lobularia maritima)",cat:"flower",z:"full_sun",wa:"low",cl:"easy",hcm:"10-15",wcm:"20-30",mo:[0,0,0,1,1,1,1,1,1,1,0,0],tip:"铺地白色小花毯，蜜蜂最爱，会自播"},
+      {n:"旱金莲",e:"Nasturtium (Tropaeolum majus)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"20-30",wcm:"30-60",mo:[0,0,0,0,0,1,1,1,1,1,0,0],tip:"花叶都能吃，越贫瘠越开花千万别施肥"},
+      {n:"秋海棠",e:"Begonia (Begonia × semperflorens)",cat:"flower",z:"shade",wa:"mod",cl:"easy",hcm:"20-30",wcm:"20-25",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"耐阴开花能手，盆栽地栽都行"},
+      {n:"美女樱",e:"Verbena (Verbena × hybrida)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"20-30",wcm:"30-45",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"铺地开花毯，排水要好，注意白粉病"},
+      {n:"醉蝶花",e:"Spider Flower (Cleome hassleriana)",cat:"flower",z:"full_sun",wa:"mod",cl:"easy",hcm:"90-150",wcm:"30-45",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"高大壮观会自播，做花境背景很出彩"},
+      {n:"勿忘我",e:"Forget-me-not (Myosotis sylvatica)",cat:"flower",z:"part_sun",wa:"mod",cl:"easy",hcm:"15-30",wcm:"15-20",mo:[0,0,0,1,1,1,0,0,0,0,0,0],tip:"会大量自播铺满地面，和Brunnera是不同属"},
+      {n:"飞蓬",e:"Fleabane (Erigeron karvinskianus)",cat:"flower",z:"full_sun",wa:"low",cl:"easy",hcm:"15-30",wcm:"30-60",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"花从白变粉，石墙缝隙种最美，耐旱"},
+      // 🍃 观叶/地被 8种
+      {n:"大型剑蕨",e:"Sword Fern (Polystichum munitum)",cat:"foliage",z:"shade",wa:"high",cl:"easy",hcm:"60-120",wcm:"60-90",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"温哥华原生植物，超耐阴超皮实，常绿"},
+      {n:"花叶络石",e:"Star Jasmine (Trachelospermum asiaticum 'Tricolor')",cat:"vine",z:"part_sun",wa:"mod",cl:"mod",hcm:"30-300",wcm:"60-100",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"新叶粉白绿三色，冬天需适当防护"},
+      {n:"常春藤",e:"English Ivy (Hedera helix)",cat:"vine",z:"shade",wa:"mod",cl:"easy",hcm:"20-30",wcm:"蔓延",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"超好养但蔓延力极强，需定期修剪控制"},
+      {n:"蔓长春花",e:"Periwinkle (Vinca minor)",cat:"ground",z:"shade",wa:"mod",cl:"easy",hcm:"10-15",wcm:"60+",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"常绿地被春天蓝紫花，铺地效果好"},
+      {n:"银叶菊",e:"Dusty Miller (Jacobaea maritima)",cat:"foliage",z:"full_sun",wa:"low",cl:"easy",hcm:"20-40",wcm:"20-30",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"银白叶片做配角百搭，通常当一年生种"},
+      {n:"观赏羽衣甘蓝",e:"Ornamental Kale (Brassica oleracea)",cat:"foliage",z:"full_sun",wa:"mod",cl:"easy",hcm:"30-45",wcm:"30-40",mo:[0,0,0,0,0,0,0,0,0,1,1,1],tip:"天越冷越好看，秋冬花园颜值担当"},
+      {n:"彩叶草",e:"Coleus (Coleus scutellarioides)",cat:"foliage",z:"part_sun",wa:"mod",cl:"easy",hcm:"30-60",wcm:"20-40",mo:[0,0,0,0,1,1,1,1,1,1,0,0],tip:"叶色比花还美，掐掉花穗保持叶色鲜艳"},
+      {n:"观赏草",e:"Ornamental Grass (Miscanthus sinensis)",cat:"foliage",z:"full_sun",wa:"low",cl:"easy",hcm:"60-180",wcm:"60-120",mo:[1,1,1,1,1,1,1,1,1,1,1,1],tip:"秋冬最美，早春贴地剪一次就好"},
+      // 🌲 灌木 7种 (含蓝莓、覆盆子、牡丹)
+      {n:"日本枫",e:"Japanese Maple (Acer palmatum)",cat:"tree",z:"part_sun",wa:"mod",cl:"mod",hcm:"200-500",wcm:"200-400",mo:[0,0,0,1,1,1,1,1,1,1,1,0],tip:"避免西晒，秋叶最美，基本不需要修剪"},
+      {n:"杜鹃花",e:"Rhododendron (Rhododendron)",cat:"shrub",z:"part_sun",wa:"mod",cl:"mod",hcm:"90-300",wcm:"90-200",mo:[0,0,0,1,1,1,0,0,0,0,0,0],tip:"酸性土必须，温哥华天然适合，浅根别种深"},
+      {n:"山茶花",e:"Camellia (Camellia japonica)",cat:"shrub",z:"part_sun",wa:"mod",cl:"mod",hcm:"150-300",wcm:"120-200",mo:[1,1,1,1,0,0,0,0,0,0,0,0],tip:"冬末春初开花，避免早晨东晒防冻融伤苞"},
+      {n:"绣线菊",e:"Spirea (Spiraea japonica)",cat:"shrub",z:"full_sun",wa:"mod",cl:"easy",hcm:"60-120",wcm:"60-120",mo:[0,0,0,0,1,1,1,1,0,0,0,0],tip:"花后修剪保持紧凑，超低维护灌木"},
+      {n:"丁香",e:"Lilac (Syringa vulgaris)",cat:"shrub",z:"full_sun",wa:"mod",cl:"easy",hcm:"200-400",wcm:"150-300",mo:[0,0,0,1,1,0,0,0,0,0,0,0],tip:"花后立刻修剪（明年花芽夏天就形成），香气醉人"},
+      {n:"蓝莓",e:"Blueberry (Vaccinium corymbosum)",cat:"shrub",z:"full_sun",wa:"mod",cl:"mod",hcm:"120-180",wcm:"90-120",mo:[0,0,0,0,0,0,1,1,0,0,0,0],tip:"必须酸性土pH4.5-5.5，用杜鹃花专用土"},
+      {n:"覆盆子",e:"Raspberry (Rubus idaeus)",cat:"shrub",z:"full_sun",wa:"mod",cl:"easy",hcm:"120-180",wcm:"60-90",mo:[0,0,0,0,0,0,1,1,1,0,0,0],tip:"温哥华长势好，需搭架，冬天修剪枯杆"},
+    ];
+
     const MON = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
     const FILTER_ZONES = [{k:"all",l:"全部"}, ...ZONES];
     const SEASONS = [{k:"all",l:"全部"},{k:"spring",l:"🌸 春"},{k:"summer",l:"☀️ 夏"},{k:"autumn",l:"🍂 秋"},{k:"winter",l:"❄️ 冬"},{k:"evergreen",l:"🌲 四季"}];
@@ -180,7 +271,7 @@
       invSort:      localStorage.getItem('mg3-inv-sort') || 'priority',
       customStats:  JSON.parse(localStorage.getItem('mg3-cs') || '[]'),
       zf: 'all', sf: 'all', stf: 'all', tab: 'guide', sel: null,
-      calCats: ['flower', 'foliage', 'ground', 'succ', 'tree', 'shrub', 'vine']
+      calCats: ['veggie', 'herb', 'flower', 'foliage', 'ground', 'succ', 'tree', 'shrub', 'vine']
     };
 
     let ALL_GROUPS = []; let ALL_STATS = []; let filteredGroups = [];
@@ -495,14 +586,13 @@
       const searchUrl = 'https://www.google.com/search?hl=zh-CN&q=' + searchKeyword;
       const displayImg = state.customImages[cv.id] || cv.img || g.img;
 
-      let tabsHtml = `<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2 items-center">`;
+      let tabsHtml = `<div id="var-tabs-row" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2 items-center">`;
       g.allVars.forEach((v, i) => {
           let isActive = sheetState.varIdx === i; let shortName = v.n.split(' ')[0];
-          tabsHtml += `<button onclick="switchVar(${i})" class="px-3.5 py-2 rounded-lg text-[13px] whitespace-nowrap transition-colors ${isActive ? 'bg-[#5C4B66] text-white shadow-sm font-bold' : 'bg-[#FCFBF8] text-[#8C8491] font-bold border border-[#EFEBF2]'}">${shortName}</button>`;
+          tabsHtml += `<button id="var-tab-${i}" onclick="switchVar(${i})" class="px-3.5 py-2 rounded-lg text-[13px] whitespace-nowrap transition-colors ${isActive ? 'bg-[#5C4B66] text-white shadow-sm font-bold' : 'bg-[#FCFBF8] text-[#8C8491] font-bold border border-[#EFEBF2]'}">${shortName}</button>`;
       });
       // 在选项卡右侧增加了编辑当前颜色的功能
-      tabsHtml += `<button onclick="addCustomVar('${g.id}')" class="px-3 py-2 rounded-lg text-[12px] whitespace-nowrap bg-[#FCFBF8] text-[#8C8491] font-bold border border-dashed border-[#C4B7CB] active:bg-[#EFEBF2] flex items-center gap-1">➕ 新增</button>`;
-      tabsHtml += `<button onclick="openEditVarModal('${g.id}', '${cv.id}')" class="px-3 py-2 rounded-lg text-[12px] whitespace-nowrap bg-[#FCFBF8] text-[#8C8491] font-bold border border-dashed border-[#C4B7CB] active:bg-[#EFEBF2] flex items-center gap-1">✎ 编辑</button></div>`;
+      tabsHtml += `<button onclick="addCustomVar('${g.id}')" class="px-3 py-2 rounded-lg text-[12px] whitespace-nowrap bg-[#FCFBF8] text-[#8C8491] font-bold border border-dashed border-[#C4B7CB] active:bg-[#EFEBF2] flex items-center gap-1">➕ 新增</button></div>`;
 
       let liIcon = Z_MAP[g.z] ? Z_MAP[g.z].split(' ')[0] : "⛅"; 
       let waIcon = W_MAP[g.wa] ? W_MAP[g.wa].split(' ')[0] : "💧";
@@ -549,7 +639,7 @@
           <span class="text-[12px] font-bold font-serif-elegant text-[#8C8491] w-10">${state.sel+1}/${filteredGroups.length}</span>
           <div class="flex-1 flex items-center justify-center gap-2 overflow-hidden">
             <h2 class="font-bold text-[22px] text-[#2D2630] font-serif-elegant truncate">${g.n}</h2>
-            <button onclick="openEditMainModal('${g.id}')" class="text-[12px] text-[#8C8491] bg-[#F2EFF4] rounded-full px-2 py-0.5 whitespace-nowrap flex-shrink-0">✎编辑属性</button>
+            <button onclick="openEditMainModal('${g.id}')" class="text-[12px] text-[#5C4B66] bg-[#EFEBF2] border border-[#C4B7CB] rounded-full px-3 py-1 whitespace-nowrap flex-shrink-0 font-bold active:bg-[#DFD8E3] transition-colors">✎ 编辑属性</button>
           </div>
           <button onclick="closeSheet()" class="w-8 h-8 rounded-full bg-[#EFEBF2] flex items-center justify-center text-[#8C8491] font-bold active:bg-[#DFD8E3]">✕</button>
         </div>
@@ -563,7 +653,10 @@
           </div>
           
           ${tabsHtml}
-          ${cv.d ? `<p class="text-[14px] text-[#2D2630] bg-white border border-[#EFEBF2] rounded-[16px] p-4 shadow-sm read-friendly animate-fadeIn">${cv.d}</p>` : ''}
+          <div onclick="openEditVarModal('${g.id}', '${cv.id}')" class="bg-white border border-[#EFEBF2] rounded-[16px] p-4 shadow-sm cursor-pointer active:bg-[#F9F7F5] transition-colors animate-fadeIn">
+            ${cv.d ? `<p class="text-[14px] text-[#2D2630] read-friendly">${cv.d}</p>` : `<p class="text-[13px] text-[#B8B0BD] italic">点击添加品种备注…</p>`}
+            <div class="flex items-center justify-end mt-2 gap-1"><span class="text-[11px] text-[#C4B7CB]">✎ 编辑品种信息</span></div>
+          </div>
 
           <div class="flex items-center gap-2 flex-wrap">
             <span class="text-[13px] font-bold px-3 py-1 rounded-md border" style="background-color:${catObj.bg}60; color:${catObj.fg}; border-color:${catObj.bg}">${catObj.l}</span>
@@ -607,7 +700,7 @@
           </button>
 
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
-            <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记</p>
+            <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
             <textarea oninput="updateCare('${g.id}', this.value); autoResize(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all overflow-hidden" rows="4" style="min-height:100px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
             <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
               <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
@@ -652,7 +745,7 @@
     
     function openSheet(idx) {
       lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
-      state.sel = idx; sheetState.varIdx = 0; sheetState.copied = false; sheetState.saved = false; renderSheet();
+      state.sel = idx; sheetState.varIdx = 0; sheetState.copied = false; sheetState.saved = false; renderSheet(); scrollActiveTabIntoView();
     }
     
     function closeSheet() {
@@ -661,7 +754,8 @@
       if(state.appNeedsRender) { renderApp(); window.scrollTo(0, lastScrollY); state.appNeedsRender = false; }
     }
 
-    function switchVar(idx) { sheetState.varIdx = idx; sheetState.copied = false; renderSheet(); }
+    function switchVar(idx) { sheetState.varIdx = idx; sheetState.copied = false; sheetState.saved = false; renderSheet(); scrollActiveTabIntoView(); }
+    function scrollActiveTabIntoView() { setTimeout(function() { const tab = document.getElementById('var-tab-' + sheetState.varIdx); if(tab) tab.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' }); }, 60); }
 
     function addCustomVar(groupId) {
       lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
@@ -694,7 +788,7 @@
       if (!state.customVars[groupId]) state.customVars[groupId] = [];
       state.customVars[groupId].push(newVar); saveState('customVars', state.customVars);
       const g = filteredGroups[state.sel]; sheetState.varIdx = g.vars.length + state.customVars[groupId].length - 1;
-      closeModal(); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); renderSheet(); showToast("✨ 新品种添加成功");
+      closeModal(); syncData(); filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId); renderSheet(); scrollActiveTabIntoView(); showToast("✨ 新品种添加成功");
     }
 
     function updateSciName(varId, val) { state.customNames[varId] = val.trim(); saveState('customNames', state.customNames); renderSheet(); }
@@ -952,11 +1046,50 @@
 
     /* ─── 新增大类 ─── */
     let tempAddBase64 = "";
+    let tempMatchedPlant = null;
     function handleAddFile(e) { const file = e.target.files[0]; if(!file) return; compressImage(file, (base64) => { tempAddBase64 = base64; document.getElementById('addPlantImgPreview').src = base64; document.getElementById('addPlantImgPreview').classList.remove('hidden'); document.getElementById('addPlantImgLabel').classList.add('hidden'); }); }
     function searchNewPlant() { const name = document.getElementById('ap_n')?.value?.trim() || ''; const ename = document.getElementById('ap_e')?.value?.trim() || ''; const q = encodeURIComponent((ename || name || '植物') + ' plant'); window.open('https://www.google.com/search?hl=zh-CN&tbm=isch&q=' + q, '_blank'); }
+
+    function matchPlantInput(query) {
+      const box = document.getElementById('ap_match'); if(!box) return;
+      const q = query.trim().toLowerCase();
+      if(q.length === 0) { box.innerHTML = '<p class="text-[12px] text-[#B8B0BD] px-1 py-1">输入名字可自动匹配植物属性</p>'; return; }
+      // Search PLANT_DB
+      let dbHits = PLANT_DB.map((p, i) => ({...p, _idx: i, _src: 'db'})).filter(p => p.n.toLowerCase().includes(q) || p.e.toLowerCase().includes(q));
+      // Search baseP for "已收录" display
+      let baseHits = baseP.map(p => ({n: p.n, e: p.e, _src: 'base'})).filter(p => p.n.toLowerCase().includes(q) || p.e.toLowerCase().includes(q));
+      let results = [...dbHits.slice(0, 5), ...baseHits.slice(0, 3)];
+      if(results.length === 0) { box.innerHTML = '<p class="text-[12px] text-[#B8B0BD] px-1 py-1">未找到匹配，可手动填写</p>'; return; }
+      box.innerHTML = results.map(r => {
+        if(r._src === 'base') {
+          return `<div class="px-3 py-2 text-[13px] text-[#B8B0BD] flex justify-between items-center"><span>${r.n} <span class="text-[11px] italic">${r.e}</span></span><span class="text-[11px] bg-[#F0F0F0] px-2 py-0.5 rounded">已收录</span></div>`;
+        }
+        const catLabel = CAT[r.cat]?.l || '';
+        return `<div onclick="selectPlantMatch(${r._idx})" class="px-3 py-2.5 text-[13px] text-[#2D2630] cursor-pointer active:bg-[#EFEBF2] rounded-lg flex justify-between items-center"><span class="font-bold">${r.n} <span class="text-[11px] font-normal italic text-[#8C8491]">${r.e.split('(')[0]}</span></span><span class="text-[11px] px-2 py-0.5 rounded" style="background:${CAT[r.cat]?.bg||'#F0F0F0'};color:${CAT[r.cat]?.fg||'#666'}">${catLabel}</span></div>`;
+      }).join('');
+    }
+
+    function selectPlantMatch(idx) {
+      const p = PLANT_DB[idx]; if(!p) return;
+      tempMatchedPlant = p;
+      document.getElementById('ap_e').value = p.e;
+      document.getElementById('ap_cat').value = p.cat;
+      document.getElementById('ap_z').value = p.z;
+      // Set bloom months
+      tempBloomMonths = new Set();
+      p.mo.forEach((v, i) => { if(v) tempBloomMonths.add(i+1); });
+      for(let m=1; m<=12; m++) {
+        const el = document.getElementById('epm_'+m);
+        if(el) {
+          if(tempBloomMonths.has(m)) { el.style.cssText = 'background:#5C4B66;color:white;'; el.classList.add('shadow-sm'); }
+          else { el.style.cssText = ''; el.classList.remove('shadow-sm'); }
+        }
+      }
+      document.getElementById('ap_match').innerHTML = '<p class="text-[12px] text-[#708064] font-bold px-1 py-1">✓ 已匹配「'+p.n+'」— 所有字段保存前可改</p>';
+    }
     
     function openAddPlantModal() {
-      tempAddBase64 = ""; tempBloomMonths = new Set();
+      tempAddBase64 = ""; tempBloomMonths = new Set(); tempMatchedPlant = null;
       lastScrollY = window.scrollY; document.body.classList.add('scroll-lock');
       let monthsHtml = MON.map((m, i) => `<div id="epm_${i+1}" onclick="toggleEditPlantMonth(${i+1})" class="py-2 text-center rounded-lg border border-[#EFEBF2] bg-white text-[12px] font-bold text-[#8C8491] cursor-pointer select-none">${i+1}月</div>`).join('');
 
@@ -976,7 +1109,10 @@
                   <div class="text-3xl mb-1 opacity-60">📷</div><div class="text-[12px] font-bold">拍照 / 从相册选择 / 可留空</div>
                 </div>
               </div>
-              <input id="ap_n" type="text" placeholder="植物名称 (必填)" class="w-full px-4 py-3.5 rounded-xl border border-[#EFEBF2] bg-white text-[15px] focus:outline-none font-bold" />
+              <div>
+                <input id="ap_n" type="text" placeholder="植物名称 (必填)" oninput="matchPlantInput(this.value)" class="w-full px-4 py-3.5 rounded-xl border border-[#EFEBF2] bg-white text-[15px] focus:outline-none font-bold" />
+                <div id="ap_match" class="mt-1.5 max-h-48 overflow-y-auto rounded-xl border border-[#EFEBF2] bg-[#FCFBF8]"><p class="text-[12px] text-[#B8B0BD] px-3 py-2">输入名字可自动匹配植物属性</p></div>
+              </div>
               <div class="flex gap-2">
                 <input id="ap_e" type="text" placeholder="英文名/学名 (选填)" class="flex-1 px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] focus:outline-none italic font-serif-elegant" />
                 <button onclick="searchNewPlant()" class="px-3 py-3 rounded-xl bg-[#EFEBF2] text-[#5C4B66] text-[12px] font-bold whitespace-nowrap">🔍 搜图</button>
@@ -1012,8 +1148,15 @@
       const imgSrc = tempAddBase64 || svgQuote;
 
       const newPlant = {
-        id: groupId, n: n, e: eName, cat: document.getElementById('ap_cat').value, z: document.getElementById('ap_z').value, img: svgQuote, care: "暂无说明",
-        ss: ["summer","spring"], tp: "", temp: "", wa: "mod", cl: "easy", view: autoViewText(moArray), hcm: "未知", wcm: "未知", mo: moArray, 
+        id: groupId, n: n, e: eName, cat: document.getElementById('ap_cat').value, z: document.getElementById('ap_z').value, img: svgQuote,
+        care: tempMatchedPlant?.tip || "暂无说明",
+        ss: ["summer","spring"], tp: "", temp: "",
+        wa: tempMatchedPlant?.wa || "mod",
+        cl: tempMatchedPlant?.cl || "easy",
+        view: autoViewText(moArray),
+        hcm: tempMatchedPlant?.hcm || "未知",
+        wcm: tempMatchedPlant?.wcm || "未知",
+        mo: moArray, 
         vars: [ { id: `${groupId}_0`, n: "原品种", e: eName, img: svgQuote, d: "", ds: "wanted", star: false } ]
       };
       if(tempAddBase64) { state.customImages[`${groupId}_0`] = tempAddBase64; await saveImgDB(`${groupId}_0`, tempAddBase64); }
