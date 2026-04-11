@@ -66,15 +66,9 @@
 
   <script>
     /* ─── 版本与更新公告 ─── */
-    const APP_VERSION = "2.2";
+    const APP_VERSION = "2.3";
     const APP_CHANGELOG = [
-      "🔍 植物智能匹配 — 添加新植物时输入名字自动匹配81种常见园艺植物的属性",
-      "🥬 新增分类 — 果蔬、香草类别，花历筛选同步更新",
-      "📎 参考链接收藏 — 每个品种可保存有用的文章、视频、对话链接",
-      "🌱 养护笔记标注「所有品种通用」— 修改一个品种的养护笔记会同步到同类所有品种",
-      "📝 品种备注更直观 — 每个品种下方增加可点击的备注卡片，点击即可编辑",
-      "🔄 切换品种不再跳页 — 品种标签自动滚动到当前选中项",
-      "✎ 编辑属性按钮更显眼 — 不容易被忽略了"
+      "📷 植物详情大图改为方形显示 — 看得更清楚啦"
     ];
 
     /* ─── 数据字典 ─── */
@@ -648,7 +642,7 @@
         </div>
 
         <div class="px-5 pb-12 pt-4 space-y-5" style="padding-bottom: calc(3rem + env(safe-area-inset-bottom));">
-          <div class="relative w-full h-52 sm:h-64 bg-white rounded-[20px] overflow-hidden border border-[#EFEBF2] shadow-sm">
+          <div class="relative w-full aspect-square bg-white rounded-[20px] overflow-hidden border border-[#EFEBF2] shadow-sm">
             ${getImgHtml(displayImg, "w-full h-full object-cover object-center")}
             <label class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md rounded-xl flex items-center gap-1.5 px-3 py-2 shadow-md cursor-pointer border border-white/60 active:scale-95 transition-transform">
               <span class="text-sm">📷</span><span class="text-[12px] font-bold text-[#5C4B66]">换照片</span><input type="file" accept="image/*" class="hidden" onchange="replacePlantImage(event, '${cv.id}')" />
