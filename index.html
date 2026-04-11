@@ -350,23 +350,39 @@
       autoResizeTextarea(document.getElementById('seed_ta_' + filteredGroups[state.sel]?.id));
     }
 
+    // Keep caret line at a fixed position above keyboard for consistent typing experience.
+    // Polls briefly for keyboard to open on focus; acts immediately on input.
+    function ensureCaretVisible(el, retries) {
+      if (!el || el.tagName !== 'TEXTAREA') return;
+      if (retries === undefined) retries = 10;
+      const vv = window.visualViewport;
+      if (!vv) return;
+      const kbOpen = vv.height < window.innerHeight * 0.85;
+      if (!kbOpen) {
+        if (retries > 0) setTimeout(function() { ensureCaretVisible(el, retries - 1); }, 50);
+        return;
+      }
+      const kbTop = vv.offsetTop + vv.height;
+      const rect = el.getBoundingClientRect();
+      const cs = getComputedStyle(el);
+      const lineHeight = parseFloat(cs.lineHeight) || 22;
+      const paddingTop = parseFloat(cs.paddingTop) || 0;
+      const text = el.value || '';
+      const caretOffset = el.selectionStart || 0;
+      const linesBeforeCaret = text.substring(0, caretOffset).split('\n').length;
+      const caretY = rect.top + paddingTop + (linesBeforeCaret - 0.5) * lineHeight;
+      const targetY = kbTop - 80;
+      const delta = caretY - targetY;
+      if (Math.abs(delta) > 8) {
+        const sheet = document.getElementById('sheet-content');
+        if (sheet) sheet.scrollTop += delta;
+      }
+    }
+
     function ensureSheetFieldVisible(el) {
       if (!el) return;
-      // For tall textareas, don't fight with iOS's native caret-scroll behavior.
-      // Only step in if the element is effectively hidden (below keyboard or offscreen).
       if (el.tagName === 'TEXTAREA') {
-        const vv = window.visualViewport;
-        const visibleBottom = vv ? (vv.offsetTop + vv.height) : window.innerHeight;
-        const rect = el.getBoundingClientRect();
-        // Element's top is below visible area OR element's bottom is above visible area
-        const hiddenBelow = rect.top > visibleBottom - 60;
-        const hiddenAbove = rect.bottom < 60;
-        if (!hiddenBelow && !hiddenAbove) return; // visible enough, let iOS handle caret
-        requestAnimationFrame(function() {
-          requestAnimationFrame(function() {
-            el.scrollIntoView({ block: hiddenBelow ? 'end' : 'start', inline: 'nearest' });
-          });
-        });
+        ensureCaretVisible(el);
         return;
       }
       requestAnimationFrame(function() {
@@ -851,10 +867,10 @@
                 <p class="text-[11px] text-[#A69EAB] mt-2 text-center">点击展开 ↓</p>
               </div>
             ` : `
-              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value); ensureCaretVisible(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
               <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
                 <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-                <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+                <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value); ensureCaretVisible(this)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
               </div>
             `}
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
