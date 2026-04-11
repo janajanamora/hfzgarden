@@ -350,8 +350,8 @@
       autoResizeTextarea(document.getElementById('seed_ta_' + filteredGroups[state.sel]?.id));
     }
 
-    // Keep caret line at a fixed position above keyboard for consistent typing experience.
-    // Polls briefly for keyboard to open on focus; acts immediately on input.
+    // Only scroll when caret is actually hidden by keyboard or above viewport top.
+    // Matches iOS Notes behavior: leave visible taps alone, only step in when needed.
     function ensureCaretVisible(el, retries) {
       if (!el || el.tagName !== 'TEXTAREA') return;
       if (retries === undefined) retries = 10;
@@ -371,12 +371,19 @@
       const caretOffset = el.selectionStart || 0;
       const linesBeforeCaret = text.substring(0, caretOffset).split('\n').length;
       const caretY = rect.top + paddingTop + (linesBeforeCaret - 0.5) * lineHeight;
-      const targetY = kbTop - 80;
-      const delta = caretY - targetY;
-      if (Math.abs(delta) > 8) {
-        const sheet = document.getElementById('sheet-content');
-        if (sheet) sheet.scrollTop += delta;
+      const sheet = document.getElementById('sheet-content');
+      if (!sheet) return;
+      // Caret hidden below keyboard → scroll just enough to show it
+      if (caretY > kbTop - 20) {
+        sheet.scrollTop += (caretY - (kbTop - 60));
+        return;
       }
+      // Caret above viewport top → scroll down just enough
+      if (caretY < 60) {
+        sheet.scrollTop += (caretY - 100);
+        return;
+      }
+      // Caret is visible — do nothing, leave user's scroll position alone
     }
 
     function ensureSheetFieldVisible(el) {
