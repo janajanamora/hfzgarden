@@ -720,10 +720,10 @@
 
           <div class="rounded-2xl p-5 border shadow-sm bg-white border-[#EFEBF2] space-y-3">
             <p class="text-[14px] font-bold text-[#56614B] flex items-center gap-1.5"><span class="text-base">🌱</span> 养护笔记 <span class="text-[11px] font-normal text-[#A69EAB]">（所有品种通用）</span></p>
-            <textarea oninput="updateCare('${g.id}', this.value); autoResize(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all overflow-hidden" rows="4" style="min-height:100px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+            <textarea oninput="updateCare('${g.id}', this.value); autoResize(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] bg-[#FCFBF8] read-friendly transition-all overflow-y-auto" rows="4" style="min-height:100px; max-height:250px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
             <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
               <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-              <textarea oninput="updateSeed('${g.id}', this.value); autoResize(this)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none bg-transparent read-friendly overflow-hidden" rows="2" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+              <textarea oninput="updateSeed('${g.id}', this.value); autoResize(this)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none bg-transparent read-friendly overflow-y-auto" rows="2" style="max-height:250px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
             </div>
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
@@ -966,7 +966,7 @@
 
     async function copyName(text) { if(!text) return showToast("没有学名可复制"); try { await navigator.clipboard.writeText(text); sheetState.copied = true; renderSheet(); setTimeout(() => { sheetState.copied = false; if(state.sel !== null) renderSheet(); }, 1500); } catch(e){} }
     function showToast(msg, ms=3000) { const root = document.getElementById('toast-root'); root.innerHTML = `<div class="bg-white/95 backdrop-blur px-5 py-3 rounded-2xl shadow-xl border border-[#EFEBF2] text-[#2D2630] font-bold text-[14px] flex items-center justify-center gap-2"><span class="text-lg">🌿</span> ${msg}</div>`; root.classList.remove('opacity-0'); setTimeout(() => root.classList.add('opacity-0'), ms); }
-    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+    function autoResize(el) { var max = 250; el.style.height = 'auto'; var h = el.scrollHeight; el.style.height = Math.min(h, max) + 'px'; el.style.overflowY = h > max ? 'auto' : 'hidden'; }
     function compressImage(file, callback) { const reader = new FileReader(); reader.onload = function(ev) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); let w = img.width, h = img.height, max = 400; if(w > max || h > max) { if(w > h) { h = Math.round(h*=max/w); w = max; } else { w = Math.round(w*=max/h); h = max; } } canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); callback(canvas.toDataURL('image/jpeg', 0.5)); }; img.src = ev.target.result; }; reader.readAsDataURL(file); }
 
     /* IndexedDB for images */
@@ -1269,14 +1269,6 @@
           const wih = window.innerHeight;
           if (vvh < wih * 0.85) {
             sheet.style.maxHeight = (vvh * 0.9) + 'px';
-            setTimeout(function() {
-              var el = document.activeElement;
-              if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
-                if (el.offsetHeight < vvh * 0.4) {
-                  el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                }
-              }
-            }, 150);
           } else {
             sheet.style.maxHeight = '';
           }
