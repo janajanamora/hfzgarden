@@ -350,6 +350,16 @@
       autoResizeTextarea(document.getElementById('seed_ta_' + filteredGroups[state.sel]?.id));
     }
 
+    function scheduleEnsureCaretVisible(el, delays) {
+      if (!el || el.tagName !== 'TEXTAREA') return;
+      const queue = Array.isArray(delays) && delays.length ? delays : [0, 80, 180, 320];
+      queue.forEach(function(delay) {
+        setTimeout(function() {
+          if (document.activeElement === el) ensureCaretVisible(el);
+        }, delay);
+      });
+    }
+
     // Only scroll when caret is actually hidden by keyboard or above viewport top.
     // Matches iOS Notes behavior: leave visible taps alone, only step in when needed.
     function ensureCaretVisible(el, retries) {
@@ -368,7 +378,7 @@
       const lineHeight = parseFloat(cs.lineHeight) || 22;
       const paddingTop = parseFloat(cs.paddingTop) || 0;
       const text = el.value || '';
-      const caretOffset = el.selectionStart || 0;
+      const caretOffset = typeof el.selectionStart === 'number' ? el.selectionStart : text.length;
       const linesBeforeCaret = text.substring(0, caretOffset).split('\n').length;
       const caretY = rect.top + paddingTop + (linesBeforeCaret - 0.5) * lineHeight;
       const sheet = document.getElementById('sheet-content');
@@ -389,7 +399,11 @@
     function ensureSheetFieldVisible(el) {
       if (!el) return;
       if (el.tagName === 'TEXTAREA') {
-        ensureCaretVisible(el);
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            scheduleEnsureCaretVisible(el);
+          });
+        });
         return;
       }
       requestAnimationFrame(function() {
@@ -1050,10 +1064,10 @@
             <h3 class="text-[16px] font-bold text-[#4B7059] mb-1 flex items-center gap-1.5">🌱 ${existing ? '修改种植日期' : '记录种植日期'}</h3>
             <p class="text-[12px] text-[#8C8491] mb-4">${existing ? '可以更新，也可以跳过不改' : '可以记下来，方便以后追踪生长。不想记也可以跳过～'}</p>
             <div class="space-y-3">
-              <div onclick="triggerDatePicker('pd_date')" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#4B7059]/40 bg-[#EAF0EC] cursor-pointer active:bg-[#DDE8DF] transition-colors">
+              <div class="relative overflow-hidden flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#4B7059]/40 bg-[#EAF0EC] cursor-pointer active:bg-[#DDE8DF] transition-colors">
                 <span id="pd_date_show" class="text-[13px] font-bold text-[#4B7059]">${existing ? '📅 ' + existing : '📅 点这里选日期'}</span>
                 <span class="text-[12px] text-[#4B7059]/60">▼</span>
-                <input id="pd_date" type="date" value="${existing || today}" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" />
+                <input id="pd_date" aria-label="种植日期" type="date" value="${existing || today}" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style="-webkit-appearance:none;appearance:none;" />
               </div>
               <div class="flex gap-2">
                 <button onclick="document.getElementById('plant-date-modal').remove()" class="flex-1 py-3 bg-white border border-[#EFEBF2] text-[#8C8491] rounded-xl font-bold text-[13px]">${existing ? '不改了' : '跳过'}</button>
@@ -1095,10 +1109,10 @@
             <h3 class="text-[16px] font-bold text-[#536F8A] mb-3 flex items-center gap-1.5">📅 排期种植</h3>
             <div class="space-y-3">
               <input id="sch_text" type="text" value="${existingText}" placeholder="备注：如下周、天暖后、最后霜冻后…" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] focus:outline-none font-bold" />
-              <div onclick="triggerDatePicker('sch_date')" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#536F8A]/40 bg-[#E8EFF5] cursor-pointer active:bg-[#D5E2EE] transition-colors">
+              <div class="relative overflow-hidden flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#536F8A]/40 bg-[#E8EFF5] cursor-pointer active:bg-[#D5E2EE] transition-colors">
                 <span id="sch_date_show" class="text-[13px] font-bold text-[#536F8A]">${existingDate ? '⏰ ' + existingDate : '📅（可选）设精确日期，到时会提醒你'}</span>
                 <span class="text-[12px] text-[#536F8A]/60">▼</span>
-                <input id="sch_date" type="date" value="${existingDate}" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" />
+                <input id="sch_date" aria-label="排期精确日期" type="date" value="${existingDate}" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style="-webkit-appearance:none;appearance:none;" />
               </div>
               <button onclick="saveSchedule('${varId}')" class="w-full py-3.5 bg-[#536F8A] text-white rounded-xl font-bold tracking-widest shadow-md">确 认</button>
             </div>
@@ -1711,6 +1725,20 @@
         if (e.target.matches('textarea, input, select')) {
           ensureSheetFieldVisible(e.target);
         }
+      });
+
+      document.addEventListener('selectionchange', function() {
+        const sheet = document.getElementById('sheet-content');
+        const el = document.activeElement;
+        if (!sheet || !el || el.tagName !== 'TEXTAREA' || !sheet.contains(el)) return;
+        scheduleEnsureCaretVisible(el, [0, 60, 160]);
+      });
+
+      document.addEventListener('click', function(e) {
+        const sheet = document.getElementById('sheet-content');
+        const el = e.target;
+        if (!sheet || !el || el.tagName !== 'TEXTAREA' || !sheet.contains(el)) return;
+        scheduleEnsureCaretVisible(el, [0, 80, 180, 320]);
       });
 
       // Check schedule reminders
