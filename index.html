@@ -342,7 +342,21 @@
     function autoResizeTextarea(el) {
       if (!el) return;
       el.style.height = 'auto';
-      el.style.height = (el.scrollHeight + 2) + 'px';
+      const capped = el.dataset.autogrowMode === 'capped';
+      if (!capped) {
+        el.style.overflowY = 'hidden';
+        el.style.height = (el.scrollHeight + 2) + 'px';
+        return;
+      }
+      const vv = window.visualViewport;
+      const viewportHeight = vv ? vv.height : window.innerHeight;
+      const capRatio = parseFloat(el.dataset.maxVh || '0.42');
+      const maxHeight = Math.max(220, Math.min(360, Math.floor(viewportHeight * capRatio)));
+      const nextHeight = Math.min(el.scrollHeight + 2, maxHeight);
+      el.style.height = nextHeight + 'px';
+      el.style.maxHeight = maxHeight + 'px';
+      el.style.overflowY = (el.scrollHeight + 2 > maxHeight) ? 'auto' : 'hidden';
+      el.style.webkitOverflowScrolling = 'touch';
     }
 
     function autoResizeSheetTextareas() {
@@ -352,6 +366,7 @@
 
     function scheduleEnsureCaretVisible(el, delays, markInteraction) {
       if (!el || el.tagName !== 'TEXTAREA') return;
+      if (el.dataset.nativeCaret === 'true' || el.dataset.autogrowMode === 'capped' || (el.id || '').indexOf('care_ta_') === 0) return;
       if (markInteraction !== false) lastCaretAssistAt = Date.now();
       const queue = Array.isArray(delays) && delays.length ? delays : [0, 80, 180, 320];
       queue.forEach(function(delay) {
@@ -365,6 +380,7 @@
     // Matches iOS Notes behavior: leave visible taps alone, only step in when needed.
     function ensureCaretVisible(el, retries) {
       if (!el || el.tagName !== 'TEXTAREA') return;
+      if (el.dataset.nativeCaret === 'true' || el.dataset.autogrowMode === 'capped' || (el.id || '').indexOf('care_ta_') === 0) return;
       if (retries === undefined) retries = 10;
       const vv = window.visualViewport;
       if (!vv) return;
@@ -889,10 +905,10 @@
                 <p class="text-[11px] text-[#A69EAB] mt-2 text-center">点击展开 ↓</p>
               </div>
             ` : `
-              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+<textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value)" data-autogrow-mode="capped" data-max-vh="0.42" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
               <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
                 <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-                <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
+<textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value)" data-autogrow-mode="capped" data-max-vh="0.42" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:44px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
               </div>
             `}
             <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
