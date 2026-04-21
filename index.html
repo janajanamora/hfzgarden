@@ -70,9 +70,10 @@
 
   <script>
     /* ─── 版本与更新公告 ─── */
-    const APP_VERSION = "2.5";
+    const APP_VERSION = "2.5.1";
     const APP_CHANGELOG = [
       "📸 每个品种可以放多张照片啦 — 在品种详情页左右滑动浏览",
+      "⭐ 全屏下可设为封面 — 选一张最喜欢的作为品种主图",
       "🔍 点照片可全屏查看 — 点任意处关闭",
       "🗑️ 全屏下右下角垃圾桶可删除单张 — 有确认提示",
       "➕ 照片最后一格是添加键 — 可随时加新照片",
@@ -1344,14 +1345,34 @@
       showToast("✨ 照片已删除");
     }
 
+    async function setPhotoCover(varId, idx) {
+      const photos = state.customImages[varId] || [];
+      if(!photos[idx]) return;
+      if(idx === 0) { showToast("✨ 已经是封面啦"); return; }
+      const moved = photos[idx];
+      const rest = photos.filter((_, i) => i !== idx);
+      const next = [moved, ...rest];
+      state.customImages[varId] = next;
+      await saveImgDB(varId, next);
+      state.appNeedsRender = true;
+      closePhotoViewer();
+      renderSheet();
+      showToast("⭐ 已设为封面");
+    }
+
     function openPhotoViewer(varId, idx) {
       const photos = state.customImages[varId] || [];
       if(!photos[idx]) return;
+      const isCover = idx === 0;
       lockBodyScroll();
       document.getElementById('modal-root').innerHTML = `
         <div class="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center animate-fadeIn" onclick="closePhotoViewer()">
           <img src="${photos[idx]}" class="max-w-full max-h-full object-contain select-none" onclick="event.stopPropagation()" draggable="false" />
           <button onclick="event.stopPropagation(); closePhotoViewer()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur text-white text-xl flex items-center justify-center font-bold active:bg-white/30" aria-label="关闭">✕</button>
+          <button onclick="event.stopPropagation(); setPhotoCover('${varId}', ${idx})" class="absolute bottom-8 left-6 backdrop-blur text-white text-[13px] font-bold flex items-center gap-1.5 px-4 h-12 rounded-full active:scale-95 transition-transform ${isCover ? 'bg-[#D4AF37]/40 border border-[#D4AF37]/60' : 'bg-white/20 border border-white/30'}" aria-label="${isCover ? '当前封面' : '设为封面'}">
+            <span>${isCover ? '⭐' : '☆'}</span>
+            <span>${isCover ? '当前封面' : '设为封面'}</span>
+          </button>
           <button onclick="event.stopPropagation(); deletePlantPhoto('${varId}', ${idx})" class="absolute bottom-8 right-6 w-12 h-12 rounded-full bg-white/20 backdrop-blur text-white text-xl flex items-center justify-center active:bg-red-500/60" aria-label="删除此照片">🗑️</button>
           <div class="absolute top-4 left-4 text-white/80 text-[12px] font-bold bg-white/10 backdrop-blur px-2.5 py-1 rounded-full">${idx+1} / ${photos.length}</div>
         </div>
