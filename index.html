@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -70,16 +70,13 @@
 
   <script>
     /* ─── 版本与更新公告 ─── */
-    const APP_VERSION = "2.4";
+    const APP_VERSION = "2.5";
     const APP_CHANGELOG = [
-      "🌤️ 首页加了天气小字 — 出门前瞄一眼",
-      "📅 排期种植改版 — 可设提醒日期，到期自动弹窗",
-      "🌱 已种植植物可记种植日期 — 看种了多少天",
-      "📝 养护笔记默认收起 — 点标题展开/折叠",
-      "📌 置顶按钮融进品种卡 — 不再孤零零一个",
-      "🎋 每次打开都有一句小诗或彩蛋",
-      "✨ 观赏期改名「活跃期」— 果蔬花草都适用",
-      "🐛 修了几个小 bug"
+      "📸 每个品种可以放多张照片啦 — 在品种详情页左右滑动浏览",
+      "🔍 点照片可全屏查看 — 点任意处关闭",
+      "🗑️ 全屏下右下角垃圾桶可删除单张 — 有确认提示",
+      "➕ 照片最后一格是添加键 — 可随时加新照片",
+      "🐛 兼容旧数据 — 之前的照片全部保留，无需操作"
     ];
 
     /* ─── 数据字典 ─── */
@@ -285,7 +282,7 @@
 
     let ALL_GROUPS = []; let ALL_STATS = []; let filteredGroups = [];
     let sheetState = { varIdx: 0, copied: false, saved: false };
-    let lastScrollY = 0; let tempBloomMonths = new Set(); let bodyLockDepth = 0; let lastCaretAssistAt = 0;
+    let lastScrollY = 0; let tempBloomMonths = new Set(); let bodyLockDepth = 0;
 
     function lockBodyScroll() {
       if (bodyLockDepth === 0) {
@@ -342,21 +339,7 @@
     function autoResizeTextarea(el) {
       if (!el) return;
       el.style.height = 'auto';
-      const capped = el.dataset.autogrowMode === 'capped';
-      if (!capped) {
-        el.style.overflowY = 'hidden';
-        el.style.height = (el.scrollHeight + 2) + 'px';
-        return;
-      }
-      const vv = window.visualViewport;
-      const viewportHeight = vv ? vv.height : window.innerHeight;
-      const capRatio = parseFloat(el.dataset.maxVh || '0.42');
-      const maxHeight = Math.max(220, Math.min(360, Math.floor(viewportHeight * capRatio)));
-      const nextHeight = Math.min(el.scrollHeight + 2, maxHeight);
-      el.style.height = nextHeight + 'px';
-      el.style.maxHeight = maxHeight + 'px';
-      el.style.overflowY = (el.scrollHeight + 2 > maxHeight) ? 'auto' : 'hidden';
-      el.style.webkitOverflowScrolling = 'touch';
+      el.style.height = (el.scrollHeight + 2) + 'px';
     }
 
     function autoResizeSheetTextareas() {
@@ -364,32 +347,10 @@
       autoResizeTextarea(document.getElementById('seed_ta_' + filteredGroups[state.sel]?.id));
     }
 
-    function escapeHtml(text) {
-      return String(text || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function scheduleEnsureCaretVisible(el, delays, markInteraction) {
-      if (!el || el.tagName !== 'TEXTAREA') return;
-      if (el.dataset.nativeCaret === 'true' || el.dataset.autogrowMode === 'capped' || (el.id || '').indexOf('care_ta_') === 0) return;
-      if (markInteraction !== false) lastCaretAssistAt = Date.now();
-      const queue = Array.isArray(delays) && delays.length ? delays : [0, 80, 180, 320];
-      queue.forEach(function(delay) {
-        setTimeout(function() {
-          if (document.activeElement === el) ensureCaretVisible(el);
-        }, delay);
-      });
-    }
-
     // Only scroll when caret is actually hidden by keyboard or above viewport top.
     // Matches iOS Notes behavior: leave visible taps alone, only step in when needed.
     function ensureCaretVisible(el, retries) {
       if (!el || el.tagName !== 'TEXTAREA') return;
-      if (el.dataset.nativeCaret === 'true' || el.dataset.autogrowMode === 'capped' || (el.id || '').indexOf('care_ta_') === 0) return;
       if (retries === undefined) retries = 10;
       const vv = window.visualViewport;
       if (!vv) return;
@@ -404,7 +365,7 @@
       const lineHeight = parseFloat(cs.lineHeight) || 22;
       const paddingTop = parseFloat(cs.paddingTop) || 0;
       const text = el.value || '';
-      const caretOffset = typeof el.selectionStart === 'number' ? el.selectionStart : text.length;
+      const caretOffset = el.selectionStart || 0;
       const linesBeforeCaret = text.substring(0, caretOffset).split('\n').length;
       const caretY = rect.top + paddingTop + (linesBeforeCaret - 0.5) * lineHeight;
       const sheet = document.getElementById('sheet-content');
@@ -425,11 +386,7 @@
     function ensureSheetFieldVisible(el) {
       if (!el) return;
       if (el.tagName === 'TEXTAREA') {
-        requestAnimationFrame(function() {
-          requestAnimationFrame(function() {
-            scheduleEnsureCaretVisible(el);
-          });
-        });
+        ensureCaretVisible(el);
         return;
       }
       requestAnimationFrame(function() {
@@ -569,7 +526,7 @@
       } else {
         html += filteredGroups.map((g, idx) => {
           const primaryVar = g.matchedVars[0];
-          const displayImg = state.customImages[primaryVar.id] || primaryVar.img || g.img;
+          const displayImg = (state.customImages[primaryVar.id] && state.customImages[primaryVar.id][0]) || primaryVar.img || g.img;
           
           const tags = Array.from(new Set(g.matchedVars.map(v => state.states[v.id] || v.ds || 'wanted'))).slice(0, 2).map(s => {
             let st = getStCfg(s);
@@ -748,7 +705,12 @@
       const curSciName = state.customNames[cv.id] || cv.e || g.e || "";
       const searchKeyword = encodeURIComponent(g.n + ' ' + (curSciName || '') + ' 养护');
       const searchUrl = 'https://www.google.com/search?hl=zh-CN&q=' + searchKeyword;
-      const displayImg = state.customImages[cv.id] || cv.img || g.img;
+      const customPhotos = state.customImages[cv.id] || [];
+      // 封面：有自传照片用第一张；否则用品种/类目默认图
+      const displayImg = customPhotos[0] || cv.img || g.img;
+      // 画廊用的照片列表：如果有自传照片，全部展示；否则回退为单张默认图
+      const galleryPhotos = customPhotos.length > 0 ? customPhotos : [displayImg];
+      const hasCustomPhotos = customPhotos.length > 0;
 
       let tabsHtml = `<div id="var-tabs-row" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2 items-center">`;
       g.allVars.forEach((v, i) => {
@@ -823,11 +785,25 @@
         </div>
 
         <div class="px-5 pb-12 pt-4 space-y-5" style="padding-bottom: calc(3rem + env(safe-area-inset-bottom) + var(--kb-offset, 0px));">
-          <div class="relative w-full aspect-square bg-white rounded-[20px] overflow-hidden border border-[#EFEBF2] shadow-sm">
-            ${getImgHtml(displayImg, "w-full h-full object-cover object-center")}
-            <label class="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md rounded-xl flex items-center gap-1.5 px-3 py-2 shadow-md cursor-pointer border border-white/60 active:scale-95 transition-transform">
-              <span class="text-sm">📷</span><span class="text-[12px] font-bold text-[#5C4B66]">换照片</span><input type="file" accept="image/*" class="hidden" onchange="replacePlantImage(event, '${cv.id}')" />
-            </label>
+          <div>
+            <div class="gallery-scroller flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3" data-var-id="${cv.id}" onscroll="updateGalleryDots(this)">
+              ${galleryPhotos.map((src, i) => `
+                <div class="snap-center shrink-0 w-full aspect-square bg-white rounded-[20px] overflow-hidden border border-[#EFEBF2] shadow-sm ${hasCustomPhotos ? 'cursor-pointer active:opacity-90 transition-opacity' : ''}" ${hasCustomPhotos ? `onclick="openPhotoViewer('${cv.id}', ${i})"` : ''}>
+                  ${getImgHtml(src, "w-full h-full object-cover object-center pointer-events-none")}
+                </div>
+              `).join('')}
+              <label class="snap-center shrink-0 w-full aspect-square rounded-[20px] border-2 border-dashed border-[#C4B7CB] bg-[#F9F7F5] flex flex-col items-center justify-center cursor-pointer active:bg-[#EFEBF2] transition-colors">
+                <div class="text-4xl opacity-50 mb-1">📷</div>
+                <div class="text-[13px] font-bold text-[#8C8491]">${hasCustomPhotos ? '+ 加一张' : '+ 添加照片'}</div>
+                <div class="text-[11px] text-[#B8B0BD] mt-0.5">${hasCustomPhotos ? `已有 ${customPhotos.length} 张` : '拍照或从相册'}</div>
+                <input type="file" accept="image/*" class="hidden" onchange="addPlantPhoto(event, '${cv.id}')" />
+              </label>
+            </div>
+            ${galleryPhotos.length > 1 ? `
+              <div class="gallery-dots flex justify-center gap-1.5 mt-2.5">
+                ${galleryPhotos.map((_, i) => `<span class="w-1.5 h-1.5 rounded-full" style="background-color:${i === 0 ? '#5C4B66' : '#C4B7CB'}"></span>`).join('')}
+              </div>
+            ` : ''}
           </div>
           
           ${tabsHtml}
@@ -914,15 +890,13 @@
                 <p class="text-[11px] text-[#A69EAB] mt-2 text-center">点击展开 ↓</p>
               </div>
             ` : `
-              <div onclick="openGardenTextModal('${g.id}','care')" class="cursor-pointer rounded-xl bg-[#FCFBF8] border border-[#EFEBF2] p-4 active:bg-white transition-colors">
-                <p class="text-[13px] font-bold text-[#56614B] mb-2">养护笔记</p>
-                <p class="text-[14px] ${(!(g.care + (g.note ? '\n\n💬 ' + g.note : '')).trim() || (g.care + (g.note ? '\n\n💬 ' + g.note : '')).trim() === '暂无说明') ? 'text-[#A69EAB]' : 'text-[#2D2630]'} read-friendly whitespace-pre-wrap">${escapeHtml((!(g.care + (g.note ? '\n\n💬 ' + g.note : '')).trim() || (g.care + (g.note ? '\n\n💬 ' + g.note : '')).trim() === '暂无说明') ? '记录养护经验…' : (g.care + (g.note ? '\n\n💬 ' + g.note : '')))}</p>
-              </div>
-              <div onclick="openGardenTextModal('${g.id}','seed')" class="cursor-pointer rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] p-4 active:bg-[#F7FBF4] transition-colors">
-                <p class="text-[13px] font-bold text-[#5A7A4A] flex items-center gap-1 mb-2">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-                <p class="text-[14px] ${g.seed ? 'text-[#3A5A2A]' : 'text-[#8CAA7A]'} read-friendly whitespace-pre-wrap">${escapeHtml(g.seed || '如需要可记录种子相关的信息…')}</p>
+              <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateCare('${g.id}', this.value); ensureCaretVisible(this)" class="w-full rounded-xl border border-[#EFEBF2] p-3 text-[15px] text-[#2D2630] resize-none focus:outline-none focus:border-[#C4B7CB] focus:bg-white bg-[#FCFBF8] read-friendly transition-colors overflow-hidden" style="min-height:160px" id="care_ta_${g.id}">${g.care}${g.note ? '\n\n💬 ' + g.note : ''}</textarea>
+              <div class="rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] overflow-hidden">
+                <p class="text-[13px] font-bold text-[#5A7A4A] px-3 pt-2.5 pb-1 flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
+                <textarea onfocus="ensureSheetFieldVisible(this)" oninput="autoResizeTextarea(this); updateSeed('${g.id}', this.value); ensureCaretVisible(this)" class="w-full px-3 pb-2.5 text-[14px] text-[#3A5A2A] resize-none focus:outline-none focus:bg-[#F7FBF4] bg-transparent read-friendly overflow-hidden" style="min-height:80px" id="seed_ta_${g.id}" placeholder="如需要可记录种子相关的信息…">${g.seed||''}</textarea>
               </div>
             `}
+            <button onclick="saveCareAndNote('${g.id}', '${cv.id}')" class="w-full py-3 rounded-xl text-[14px] font-bold text-white transition-colors tracking-widest" style="background-color:${sheetState.saved?'#708064':'#5C4B66'}">${sheetState.saved?"✓ 已保存":"保存"}</button>
           </div>
         </div>
       `;
@@ -949,48 +923,6 @@
       }
       syncViewportPanels();
       autoResizeSheetTextareas();
-      enhanceGardenTextEditors(g, cv);
-    }
-
-    function enhanceGardenTextEditors(g, cv) {
-      if (!g) return;
-      const careTa = document.getElementById('care_ta_' + g.id);
-      if (careTa) {
-        const careText = g.care + (g.note ? '\n\n💬 ' + g.note : '');
-        const careCard = document.createElement('div');
-        careCard.className = 'cursor-pointer rounded-xl bg-[#FCFBF8] border border-[#EFEBF2] p-4 active:bg-white transition-colors';
-        careCard.onclick = function() { openGardenTextModal(g.id, 'care'); };
-        careCard.innerHTML = `
-          <div class="flex items-center justify-between gap-3 mb-2">
-            <p class="text-[13px] font-bold text-[#56614B]">养护笔记</p>
-            <span class="text-[12px] font-bold text-[#5C4B66] bg-[#EFEBF2] border border-[#D8CFDE] rounded-full px-3 py-1 whitespace-nowrap">编辑</span>
-          </div>
-          <p class="text-[14px] text-[#2D2630] read-friendly whitespace-pre-wrap">${escapeHtml(careText || '暂无说明')}</p>
-        `;
-        careTa.replaceWith(careCard);
-      }
-
-      const seedTa = document.getElementById('seed_ta_' + g.id);
-      if (seedTa) {
-        const seedWrap = seedTa.parentElement;
-        const seedText = g.seed || '';
-        const seedCard = document.createElement('div');
-        seedCard.className = 'cursor-pointer rounded-xl border border-[#D9E6D3] bg-[#F0F5EE] p-4 active:bg-[#F7FBF4] transition-colors';
-        seedCard.onclick = function() { openGardenTextModal(g.id, 'seed'); };
-        seedCard.innerHTML = `
-          <div class="flex items-center justify-between gap-3 mb-2">
-            <p class="text-[13px] font-bold text-[#5A7A4A] flex items-center gap-1">🌰 种子提示 <span class="text-[11px] font-normal text-[#8CAA7A]">（选填）</span></p>
-            <span class="text-[12px] font-bold text-[#5A7A4A] bg-white/80 border border-[#D9E6D3] rounded-full px-3 py-1 whitespace-nowrap">${seedText ? '编辑' : '添加'}</span>
-          </div>
-          <p class="text-[14px] text-[#3A5A2A] read-friendly whitespace-pre-wrap">${escapeHtml(seedText || '如果需要，点开这里写下播种、育苗、发芽等小提醒。')}</p>
-        `;
-        if (seedWrap) seedWrap.replaceWith(seedCard);
-      }
-
-      const actionBtn = Array.from(document.querySelectorAll('#sheet-content button')).find(function(btn) {
-        return (btn.getAttribute('onclick') || '').indexOf("saveCareAndNote('" + g.id + "'") !== -1;
-      });
-      if (actionBtn) actionBtn.remove();
     }
 
     function getImgHtml(src, cls) {
@@ -1134,10 +1066,10 @@
             <h3 class="text-[16px] font-bold text-[#4B7059] mb-1 flex items-center gap-1.5">🌱 ${existing ? '修改种植日期' : '记录种植日期'}</h3>
             <p class="text-[12px] text-[#8C8491] mb-4">${existing ? '可以更新，也可以跳过不改' : '可以记下来，方便以后追踪生长。不想记也可以跳过～'}</p>
             <div class="space-y-3">
-              <div class="relative overflow-hidden flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#4B7059]/40 bg-[#EAF0EC] cursor-pointer active:bg-[#DDE8DF] transition-colors">
+              <div onclick="triggerDatePicker('pd_date')" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#4B7059]/40 bg-[#EAF0EC] cursor-pointer active:bg-[#DDE8DF] transition-colors">
                 <span id="pd_date_show" class="text-[13px] font-bold text-[#4B7059]">${existing ? '📅 ' + existing : '📅 点这里选日期'}</span>
                 <span class="text-[12px] text-[#4B7059]/60">▼</span>
-                <input id="pd_date" aria-label="种植日期" type="date" value="${existing || today}" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style="-webkit-appearance:none;appearance:none;" />
+                <input id="pd_date" type="date" value="${existing || today}" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" />
               </div>
               <div class="flex gap-2">
                 <button onclick="document.getElementById('plant-date-modal').remove()" class="flex-1 py-3 bg-white border border-[#EFEBF2] text-[#8C8491] rounded-xl font-bold text-[13px]">${existing ? '不改了' : '跳过'}</button>
@@ -1179,10 +1111,10 @@
             <h3 class="text-[16px] font-bold text-[#536F8A] mb-3 flex items-center gap-1.5">📅 排期种植</h3>
             <div class="space-y-3">
               <input id="sch_text" type="text" value="${existingText}" placeholder="备注：如下周、天暖后、最后霜冻后…" class="w-full px-4 py-3 rounded-xl border border-[#EFEBF2] bg-white text-[14px] focus:outline-none font-bold" />
-              <div class="relative overflow-hidden flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#536F8A]/40 bg-[#E8EFF5] cursor-pointer active:bg-[#D5E2EE] transition-colors">
+              <div onclick="triggerDatePicker('sch_date')" class="flex items-center justify-between w-full px-4 py-3 rounded-xl border-2 border-dashed border-[#536F8A]/40 bg-[#E8EFF5] cursor-pointer active:bg-[#D5E2EE] transition-colors">
                 <span id="sch_date_show" class="text-[13px] font-bold text-[#536F8A]">${existingDate ? '⏰ ' + existingDate : '📅（可选）设精确日期，到时会提醒你'}</span>
                 <span class="text-[12px] text-[#536F8A]/60">▼</span>
-                <input id="sch_date" aria-label="排期精确日期" type="date" value="${existingDate}" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" style="-webkit-appearance:none;appearance:none;" />
+                <input id="sch_date" type="date" value="${existingDate}" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;" />
               </div>
               <button onclick="saveSchedule('${varId}')" class="w-full py-3.5 bg-[#536F8A] text-white rounded-xl font-bold tracking-widest shadow-md">确 认</button>
             </div>
@@ -1291,67 +1223,6 @@
     function saveNoteUi() { sheetState.saved = true; renderSheet(); setTimeout(() => { sheetState.saved = false; if(state.sel !== null) renderSheet(); }, 1000); showToast("📝 笔记已保存"); }
 
     /* ─── 品种链接收藏 ─── */
-    function openGardenTextModal(groupId, field) {
-      const g = ALL_GROUPS.find(gr => gr.id === groupId);
-      if (!g) return;
-      const isCare = field === 'care';
-      const title = isCare ? '📝 编辑养护笔记' : '🌰 编辑种子提示';
-      const hint = isCare ? '适合写浇水、修剪、越冬、分株等长期养护经验。' : '可选填写播种、育苗、发芽、催芽等小提醒。';
-      const placeholder = isCare ? '在这里记录这株植物的养护经验…' : '如有需要，可记录种子相关的信息…';
-      const rawCare = g.care + (g.note ? '\n\n💬 ' + g.note : '');
-      const existing = isCare
-        ? ((rawCare.trim() === '暂无说明') ? '' : rawCare)
-        : (g.seed || '');
-
-      lockBodyScroll();
-      document.getElementById('modal-root').innerHTML = `
-        <div class="fixed left-0 right-0 z-[70] flex flex-col font-sans" style="${getViewportShellStyle()}">
-          <div class="flex-1 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
-          <div data-bottom-panel class="bg-[var(--bg-cream)] rounded-t-[32px] overflow-y-auto animate-slideUp">
-            <div class="sticky top-0 bg-[var(--bg-cream)]/95 backdrop-blur-md z-10 px-5 pt-4 pb-3 border-b border-[#EFEBF2] flex justify-between items-center">
-              <h2 class="font-bold text-[18px] text-[#5C4B66] font-serif-elegant">${title}</h2>
-              <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-[#EFEBF2] text-[#8C8491] font-bold">✕</button>
-            </div>
-            <div class="p-5 space-y-4" style="padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));">
-              <p class="text-[13px] text-[#8C8491]">${hint}</p>
-              <textarea id="garden_text_editor" placeholder="${placeholder}" class="w-full px-4 py-4 rounded-2xl border border-[#EFEBF2] bg-white min-h-[320px] resize-none focus:outline-none text-[15px] read-friendly text-[#2D2630]"></textarea>
-              <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 py-3.5 bg-white border border-[#EFEBF2] text-[#8C8491] rounded-xl font-bold">退出</button>
-                <button onclick="saveGardenTextModal('${groupId}','${field}')" class="flex-1 py-3.5 bg-[#5C4B66] text-white rounded-xl font-bold tracking-widest shadow-md">保存</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      const editor = document.getElementById('garden_text_editor');
-      if (editor) {
-        editor.value = existing;
-        requestAnimationFrame(function() {
-          autoResizeTextarea(editor);
-        });
-      }
-      syncViewportPanels();
-    }
-
-    function saveGardenTextModal(groupId, field) {
-      const editor = document.getElementById('garden_text_editor');
-      if (!editor) return;
-      const val = editor.value;
-      if (!state.customMainInfo[groupId]) state.customMainInfo[groupId] = {};
-      if (field === 'care') {
-        state.customMainInfo[groupId].care = val;
-        state.customMainInfo[groupId].note = '';
-      } else {
-        state.customMainInfo[groupId].seed = val;
-      }
-      saveState('customMainInfo', state.customMainInfo);
-      closeModal();
-      syncData();
-      filteredGroups[state.sel] = ALL_GROUPS.find(gr => gr.id === groupId);
-      renderSheet();
-      showToast('📝 已保存');
-    }
-
     let linksExpanded = {};
     let careCollapsed = {};
     function toggleCareCollapse(groupId) {
@@ -1430,10 +1301,80 @@
       req.onerror = () => reject();
     }); }
     async function saveImgDB(key, val) { try { const db = await openImgDB(); const tx = db.transaction('imgs','readwrite'); tx.objectStore('imgs').put(val, key); } catch(e){} }
-    async function loadAllImgs() { try { const db = await openImgDB(); return new Promise((resolve) => { const tx = db.transaction('imgs','readonly'); const store = tx.objectStore('imgs'); const req = store.getAll(); const reqK = store.getAllKeys(); let vals, keys; req.onsuccess = () => { vals = req.result; }; reqK.onsuccess = () => { keys = reqK.result; }; tx.oncomplete = () => { const obj = {}; if(keys && vals) keys.forEach((k,i) => obj[k] = vals[i]); resolve(obj); }; tx.onerror = () => resolve({}); }); } catch(e) { return {}; } }
-    async function migrateImgsToIDB() { const old = JSON.parse(localStorage.getItem('mg3-ci') || '{}'); if(Object.keys(old).length > 0) { for(const [k,v] of Object.entries(old)) { await saveImgDB(k, v); } localStorage.removeItem('mg3-ci'); } }
+    async function deleteImgDB(key) { try { const db = await openImgDB(); const tx = db.transaction('imgs','readwrite'); tx.objectStore('imgs').delete(key); } catch(e){} }
+    // 兼容老格式：v 可能是单张 base64 字符串 → 升级为数组 [str]；已是数组则原样返回
+    function normalizePhotos(v) { if(typeof v === 'string') return [v]; if(Array.isArray(v)) return v; return []; }
+    async function loadAllImgs() { try { const db = await openImgDB(); return new Promise((resolve) => { const tx = db.transaction('imgs','readonly'); const store = tx.objectStore('imgs'); const req = store.getAll(); const reqK = store.getAllKeys(); let vals, keys; req.onsuccess = () => { vals = req.result; }; reqK.onsuccess = () => { keys = reqK.result; }; tx.oncomplete = () => { const obj = {}; if(keys && vals) keys.forEach((k,i) => { const norm = normalizePhotos(vals[i]); if(norm.length) obj[k] = norm; }); resolve(obj); }; tx.onerror = () => resolve({}); }); } catch(e) { return {}; } }
+    async function migrateImgsToIDB() { const old = JSON.parse(localStorage.getItem('mg3-ci') || '{}'); if(Object.keys(old).length > 0) { for(const [k,v] of Object.entries(old)) { await saveImgDB(k, normalizePhotos(v)); } localStorage.removeItem('mg3-ci'); } }
 
-    function replacePlantImage(e, varId) { const file = e.target.files[0]; if(!file) return; compressImage(file, async (base64) => { state.customImages[varId] = base64; await saveImgDB(varId, base64); state.appNeedsRender = true; renderSheet(); showToast("✨ 照片替换成功"); }); }
+    function addPlantPhoto(e, varId) {
+      const file = e.target.files[0];
+      if(!file) return;
+      e.target.value = ''; // 允许重选同一张
+      compressImage(file, async (base64) => {
+        if(!state.customImages[varId]) state.customImages[varId] = [];
+        state.customImages[varId].push(base64);
+        await saveImgDB(varId, state.customImages[varId]);
+        state.appNeedsRender = true;
+        renderSheet();
+        showToast("✨ 照片已添加");
+        // 滚到最后一张（即刚添加的）
+        setTimeout(() => {
+          const s = document.querySelector('.gallery-scroller[data-var-id="' + varId + '"]');
+          if(s) s.scrollTo({ left: s.scrollWidth, behavior: 'smooth' });
+        }, 120);
+      });
+    }
+
+    async function deletePlantPhoto(varId, idx) {
+      if(!confirm('要删除这张照片吗？')) return;
+      const photos = state.customImages[varId] || [];
+      if(!photos[idx]) return;
+      const next = photos.filter((_, i) => i !== idx);
+      if(next.length === 0) {
+        delete state.customImages[varId];
+        await deleteImgDB(varId);
+      } else {
+        state.customImages[varId] = next;
+        await saveImgDB(varId, next);
+      }
+      state.appNeedsRender = true;
+      closePhotoViewer();
+      renderSheet();
+      showToast("✨ 照片已删除");
+    }
+
+    function openPhotoViewer(varId, idx) {
+      const photos = state.customImages[varId] || [];
+      if(!photos[idx]) return;
+      lockBodyScroll();
+      document.getElementById('modal-root').innerHTML = `
+        <div class="fixed inset-0 z-[80] bg-black/95 flex items-center justify-center animate-fadeIn" onclick="closePhotoViewer()">
+          <img src="${photos[idx]}" class="max-w-full max-h-full object-contain select-none" onclick="event.stopPropagation()" draggable="false" />
+          <button onclick="event.stopPropagation(); closePhotoViewer()" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur text-white text-xl flex items-center justify-center font-bold active:bg-white/30" aria-label="关闭">✕</button>
+          <button onclick="event.stopPropagation(); deletePlantPhoto('${varId}', ${idx})" class="absolute bottom-8 right-6 w-12 h-12 rounded-full bg-white/20 backdrop-blur text-white text-xl flex items-center justify-center active:bg-red-500/60" aria-label="删除此照片">🗑️</button>
+          <div class="absolute top-4 left-4 text-white/80 text-[12px] font-bold bg-white/10 backdrop-blur px-2.5 py-1 rounded-full">${idx+1} / ${photos.length}</div>
+        </div>
+      `;
+    }
+
+    function closePhotoViewer() {
+      document.getElementById('modal-root').innerHTML = '';
+      unlockBodyScroll();
+    }
+
+    function updateGalleryDots(scrollerEl) {
+      const dotsEl = scrollerEl.parentElement.querySelector('.gallery-dots');
+      if(!dotsEl) return;
+      const first = scrollerEl.firstElementChild;
+      if(!first) return;
+      const itemWidth = first.offsetWidth || scrollerEl.clientWidth;
+      const gap = 12; // 对应 Tailwind gap-3
+      const activeIdx = Math.round(scrollerEl.scrollLeft / (itemWidth + gap));
+      dotsEl.querySelectorAll('span').forEach((dot, i) => {
+        dot.style.backgroundColor = i === activeIdx ? '#5C4B66' : '#C4B7CB';
+      });
+    }
 
     /* ─── 园艺清单弹窗功能 ─── */
     function openInvModal(itemId = null) {
@@ -1678,7 +1619,7 @@
         mo: moArray, 
         vars: [ { id: `${groupId}_0`, n: "原品种", e: eName, img: svgQuote, d: "", ds: "wanted", star: false } ]
       };
-      if(tempAddBase64) { state.customImages[`${groupId}_0`] = tempAddBase64; await saveImgDB(`${groupId}_0`, tempAddBase64); }
+      if(tempAddBase64) { state.customImages[`${groupId}_0`] = [tempAddBase64]; await saveImgDB(`${groupId}_0`, [tempAddBase64]); }
       state.customPlants.unshift(newPlant); saveState('customPlants', state.customPlants);
       closeModal(); setFilter('stf', 'all'); showToast("🎊 新植物诞生了");
     }
@@ -1704,7 +1645,7 @@
       `;
     }
     function exportData() { localStorage.setItem('mg3-lastbackup', Date.now().toString()); const dataStr = JSON.stringify({ s: state.states, n: state.notes, st: state.stars, cp: state.customPlants, cs: state.customStats, ci: state.customImages, cv: state.customVars, cvi: state.customVarsInfo, delv: state.deletedVars, cname: state.customNames, cmain: state.customMainInfo, dates: state.scheduleDates, srd: state.scheduleRealDates, pd: state.plantDates, inv: state.inventory, invSort: state.invSort, vl: state.varLinks }); const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([dataStr], { type: "application/json" })); a.download = `花园图鉴备份_${new Date().toISOString().slice(0,10)}.json`; a.click(); showToast("已导出，请妥善保存"); closeModal(); }
-    function importData(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(ev) { try { const d = JSON.parse(ev.target.result); if(d.s) saveState('states', d.s); if(d.n) saveState('notes', d.n); if(d.st) saveState('stars', d.st); if(d.cp) saveState('customPlants', d.cp); if(d.cs) saveState('customStats', d.cs); if(d.ci) { for(const [k,v] of Object.entries(d.ci)) { await saveImgDB(k, v); } } if(d.cv) saveState('customVars', d.cv); if(d.cvi) saveState('customVarsInfo', d.cvi); if(d.delv) saveState('deletedVars', d.delv); if(d.cname) saveState('customNames', d.cname); if(d.cmain) saveState('customMainInfo', d.cmain); if(d.dates) saveState('scheduleDates', d.dates); if(d.srd) saveState('scheduleRealDates', d.srd); if(d.pd) saveState('plantDates', d.pd); if(d.inv) saveState('inventory', d.inv); if(d.invSort) saveState('invSort', d.invSort); if(d.vl) saveState('varLinks', d.vl); alert("恢复成功，即将重新加载！"); location.reload(); } catch(err) { alert("解析失败，请检查文件。"); } }; reader.readAsText(file); }
+    function importData(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async function(ev) { try { const d = JSON.parse(ev.target.result); if(d.s) saveState('states', d.s); if(d.n) saveState('notes', d.n); if(d.st) saveState('stars', d.st); if(d.cp) saveState('customPlants', d.cp); if(d.cs) saveState('customStats', d.cs); if(d.ci) { for(const [k,v] of Object.entries(d.ci)) { const arr = normalizePhotos(v); if(arr.length) await saveImgDB(k, arr); } } if(d.cv) saveState('customVars', d.cv); if(d.cvi) saveState('customVarsInfo', d.cvi); if(d.delv) saveState('deletedVars', d.delv); if(d.cname) saveState('customNames', d.cname); if(d.cmain) saveState('customMainInfo', d.cmain); if(d.dates) saveState('scheduleDates', d.dates); if(d.srd) saveState('scheduleRealDates', d.srd); if(d.pd) saveState('plantDates', d.pd); if(d.inv) saveState('inventory', d.inv); if(d.invSort) saveState('invSort', d.invSort); if(d.vl) saveState('varLinks', d.vl); alert("恢复成功，即将重新加载！"); location.reload(); } catch(err) { alert("解析失败，请检查文件。"); } }; reader.readAsText(file); }
 
     /* ─── 天气 ─── */
     const WEATHER_TEXT = { 0:'晴', 1:'晴朗', 2:'多云', 3:'阴', 45:'雾', 48:'雾', 51:'毛毛雨', 53:'小雨', 55:'小雨', 56:'冻雨', 57:'冻雨', 61:'小雨', 63:'中雨', 65:'大雨', 66:'冻雨', 67:'冻雨', 71:'小雪', 73:'中雪', 75:'大雪', 77:'雪', 80:'阵雨', 81:'阵雨', 82:'暴雨', 85:'阵雪', 86:'阵雪', 95:'雷雨', 96:'雷雨', 99:'雷雨' };
@@ -1856,21 +1797,6 @@
         if (e.target.matches('textarea, input, select')) {
           ensureSheetFieldVisible(e.target);
         }
-      });
-
-      document.addEventListener('selectionchange', function() {
-        const sheet = document.getElementById('sheet-content');
-        const el = document.activeElement;
-        if (!sheet || !el || el.tagName !== 'TEXTAREA' || !sheet.contains(el)) return;
-        if (Date.now() - lastCaretAssistAt > 700) return;
-        scheduleEnsureCaretVisible(el, [0, 60, 160], false);
-      });
-
-      document.addEventListener('click', function(e) {
-        const sheet = document.getElementById('sheet-content');
-        const el = e.target;
-        if (!sheet || !el || el.tagName !== 'TEXTAREA' || !sheet.contains(el)) return;
-        scheduleEnsureCaretVisible(el, [0, 80, 180, 320]);
       });
 
       // Check schedule reminders
